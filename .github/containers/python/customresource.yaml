@@ -11,5 +11,5 @@ spec:
     image: ghcr.io/${{ github.repository }}-python
     env:
       # Put the agent in developer mode so it doesn't try to connect to the real collector.
-      - name: NEW_RELIC_DEV_MODE
+      - name: NEW_RELIC_DEVELOPER_MODE
         value: true

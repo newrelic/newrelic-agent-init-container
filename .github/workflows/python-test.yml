@@ -84,7 +84,7 @@ jobs:
           helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version v1.11.0  --set installCRDs=true
           helm upgrade --install newrelic-agent-operator chart/ --set licenseKey='SUPERSECRET' -n newrelic
           kubectl apply -f ./../containers/python/customresource.yaml -n python-test
-          kubectl apply -f ./../containers/python/. -n python-test
+          kubectl apply -f ./../containers/python/python_test_app_deployment.yaml -n python-test
 
       # Wait 30 seconds for the cluster to start and then hit the test application endpoint.
       - name: Test
