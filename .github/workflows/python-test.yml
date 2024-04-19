@@ -18,31 +18,13 @@ on:
   # Allow manual trigger.
   workflow_dispatch: 
   push:
-    # Run tests on push to main or PR. 
+    # Run on push to main or PR. 
     branches:
       - main
     pull_request:
     # Do not run when a tag is created.
     tags-ignore:
       - "**"
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Build
-        run: go build -o myapp .
-      - name: Docker Build and Push
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          push: true
-          tags: your-docker-registry/your-repo:latest
-concurrency:
-  group: ${{ github.ref || github.run_id }}
-  cancel-in-progress: true
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -90,32 +72,22 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-      - name: Build and publish test app image
-        uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0 # 5.3.0
-        with:
-          push: ${{ github.event_name != 'pull_request' }}
-          context: .github/containers
-          platforms: ${{ (format('refs/heads/{0}', github.event.repository.default_branch) == github.ref) && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-
-      - name: Start minikube
+      - name: Start and deploy to minikube
         uses: medyagh/setup-minikube@317d92317e473a10540357f1f4b2878b80ee7b95 # 0.0.16
-
-      - name: Build image
+        # Create newrelic and python-test namespaces.
+        # Install the certificate manager which is a dependency of the newrelic-agent-operator.
+        # Install the newrelic-agent-operator.
+        # Add the custom resource file (points to the agent init container) and test application container to the cluster.
         run: |
-          export SHELL=/bin/bash
-          minikube -p minikube docker-env
-          make build-image
-          echo -n "verifying images:"
-          docker images
+          kubectl create ns newrelic
+          kubectl create ns python-test
+          helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version v1.11.0  --set installCRDs=true
+          helm upgrade --install newrelic-agent-operator chart/ --set licenseKey='SUPERSECRET' -n newrelic
+          kubectl apply -f ./../containers/python/customresource.yaml -n python-test
+          kubectl apply -f ./../containers/python/. -n python-test
 
-      - name: Deploy to minikube
-        run: |
-          kubectl apply -f deploy/deploy-minikube.yaml
-
-      # Wait 30 seconds for the cluster to start and then hit an application endpoint.
-      - name: Test service URLs
+      # Wait 30 seconds for the cluster to start and then hit the test application endpoint.
+      - name: Test
         run: |
           curl $(minikube service --wait 30 discover --url)/version
           curl http://localhost:5000
