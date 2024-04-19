@@ -1,0 +1,15 @@
+---
+apiVersion: newrelic.com/v1alpha1
+kind: Instrumentation
+metadata:
+  labels:
+    app.kubernetes.io/name: instrumentation
+    app.kubernetes.io/created-by: newrelic-agent-operator
+  name: newrelic-instrumentation
+spec:
+  python:
+    image: ghcr.io/${{ github.repository }}-python
+    env:
+      # Put the agent in developer mode so it doesn't try to connect to the real collector.
+      - name: NEW_RELIC_DEV_MODE
+        value: true
