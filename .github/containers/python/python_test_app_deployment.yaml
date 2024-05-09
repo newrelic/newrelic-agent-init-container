@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: python-test-app
-          image: e2e/python_test_app
+          image: e2e/python_test_app:e2e
           ports:
             - containerPort: 5000
 ---
