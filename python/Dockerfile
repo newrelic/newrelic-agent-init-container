@@ -18,8 +18,7 @@ ENV NEW_RELIC_EXTENSIONS = False
 # Pure Python versions of code supporting some features, rather than the
 # optimised C versions, will also be used resulting in additional overheads.
 
-# ADD requirements.txt .
-RUN mkdir workspace && pip install --target workspace newrelic==$version
+RUN mkdir workspace && pip install --target workspace newrelic
 
 FROM busybox
 COPY --from=build /operator-build/workspace /instrumentation
