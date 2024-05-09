@@ -75,27 +75,28 @@ jobs:
       - name: Start minikube
         uses: medyagh/setup-minikube@317d92317e473a10540357f1f4b2878b80ee7b95 # 0.0.16
       
-      - name: Deploy to minikube
-        # Create newrelic and python-test namespaces.
-        # Install the certificate manager which is a dependency of the newrelic-agent-operator.
-        # Install the newrelic-agent-operator.
-        # Add the custom resource file (points to the agent init container) and test application container to the cluster.
-
-
-          # helm repo add jetstack https://charts.jetstack.io
-          # helm upgrade --install cert-manager jetstack/cert-manager --namespace cert-manager --version v1.1.1 --set installCRDs=true
-
+      - name: Deploy cert-manager to minikube
         run: |
           kubectl create namespace cert-manager
           kubectl label namespace cert-manager certmanager.k8s.io/disable-validation="true"
           kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.14.5/cert-manager.yaml
           kubectl wait --for=condition=Ready --namespace cert-manager --all pods
 
+      - name: Deploy newrelic-agent-operator to minikube
+        run: |
           kubectl create namespace newrelic
           helm repo add newrelic-agent-operator https://newrelic-experimental.github.io/newrelic-agent-operator
           helm upgrade --install newrelic-agent-operator newrelic-agent-operator/newrelic-agent-operator --set licenseKey='SUPERSECRET' -n newrelic
           kubectl wait --for=condition=Ready --namespace newrelic --all pods
 
+      # Add the custom resource file (points to the agent init container) and test application container to the cluster.
+      - name: Build test container
+        run: |
+          docker build .github/containers/python/ -t e2e/python_test_app
+
+      # Add the custom resource file (points to the agent init container) and test application container to the cluster.
+      - name: Deploy test app to minikube
+        run: |
           kubectl create namespace python-test
           kubectl apply -f .github/containers/python/customresource.yaml -n python-test
           kubectl apply -f .github/containers/python/python_test_app_deployment.yaml -n python-test
