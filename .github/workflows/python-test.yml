@@ -67,25 +67,27 @@ jobs:
         uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0 # 5.3.0
         with:
           push: ${{ github.event_name != 'pull_request' }}
-          context: .github/containers
+          context: python/
           platforms: ${{ (format('refs/heads/{0}', github.event.repository.default_branch) == github.ref) && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
       - name: Start minikube
         uses: medyagh/setup-minikube@317d92317e473a10540357f1f4b2878b80ee7b95 # 0.0.16
+      
+      - name: Deploy to minikube
         # Create newrelic and python-test namespaces.
         # Install the certificate manager which is a dependency of the newrelic-agent-operator.
         # Install the newrelic-agent-operator.
         # Add the custom resource file (points to the agent init container) and test application container to the cluster.
-      - name: Deploy to minikube
         run: |
           kubectl create ns newrelic
           kubectl create ns python-test
-          helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version v1.11.0  --set installCRDs=true
+          kubectl create ns cert-manager
+          helm install cert-manager jetstack/cert-manager --namespace cert-manager --version v1.11.0  --set installCRDs=true
           helm upgrade --install newrelic-agent-operator chart/ --set licenseKey='SUPERSECRET' -n newrelic
-          kubectl apply -f ./../containers/python/customresource.yaml -n python-test
-          kubectl apply -f ./../containers/python/python_test_app_deployment.yaml -n python-test
+          kubectl apply -f .github/containers/python/customresource.yaml -n python-test
+          kubectl apply -f .github/containers/python/python_test_app_deployment.yaml -n python-test
 
       # Wait 30 seconds for the cluster to start and then hit the test application endpoint.
       - name: Test
