@@ -83,9 +83,11 @@ jobs:
         run: |
           kubectl create ns newrelic
           kubectl create ns python-test
-          kubectl create ns cert-manager
           kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.14.5/cert-manager.yaml
-          helm upgrade --install newrelic-agent-operator chart/ --set licenseKey='SUPERSECRET' -n newrelic
+
+          helm repo add newrelic-agent-operator https://newrelic-experimental.github.io/newrelic-agent-operator
+          helm upgrade --install newrelic-agent-operator newrelic-agent-operator/newrelic-agent-operator --set licenseKey='SUPERSECRET' -n newrelic
+
           kubectl apply -f .github/containers/python/customresource.yaml -n python-test
           kubectl apply -f .github/containers/python/python_test_app_deployment.yaml -n python-test
 
