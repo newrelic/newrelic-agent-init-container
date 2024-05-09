@@ -80,11 +80,15 @@ jobs:
         # Install the certificate manager which is a dependency of the newrelic-agent-operator.
         # Install the newrelic-agent-operator.
         # Add the custom resource file (points to the agent init container) and test application container to the cluster.
+
+
+          # helm repo add jetstack https://charts.jetstack.io
+          # helm upgrade --install cert-manager jetstack/cert-manager --namespace cert-manager --version v1.1.1 --set installCRDs=true
+
         run: |
           kubectl create namespace cert-manager
           kubectl label namespace cert-manager certmanager.k8s.io/disable-validation="true"
-          helm repo add jetstack https://charts.jetstack.io
-          helm upgrade --install cert-manager jetstack/cert-manager --namespace cert-manager --version v1.1.1 --set installCRDs=true
+          kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.14.5/cert-manager.yaml
           kubectl wait --for=condition=Ready --namespace cert-manager --all pods
 
           kubectl create namespace newrelic
