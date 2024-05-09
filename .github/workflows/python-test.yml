@@ -86,7 +86,7 @@ jobs:
           helm upgrade --install cert-manager jetstack/cert-manager --namespace cert-manager --version v1.1.1 --set installCRDs=true
           kubectl wait --for=condition=Ready --namespace cert-manager --all pods
 
-          kubectl create namespacens newrelic
+          kubectl create namespace newrelic
           helm repo add newrelic-agent-operator https://newrelic-experimental.github.io/newrelic-agent-operator
           helm upgrade --install newrelic-agent-operator newrelic-agent-operator/newrelic-agent-operator --set licenseKey='SUPERSECRET' -n newrelic
           kubectl wait --for=condition=Ready --namespace newrelic --all pods
