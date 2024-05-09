@@ -12,4 +12,4 @@ spec:
     env:
       # Put the agent in developer mode so it doesn't try to connect to the real collector.
       - name: NEW_RELIC_DEVELOPER_MODE
-        value: true
+        value: "true"
