@@ -81,8 +81,6 @@ jobs:
         # Install the newrelic-agent-operator.
         # Add the custom resource file (points to the agent init container) and test application container to the cluster.
         run: |
-          curl $(minikube service --wait 30 discover --url)/version
-
           kubectl create namespace cert-manager
           helm repo add jetstack https://charts.jetstack.io
           helm upgrade --install cert-manager jetstack/cert-manager --namespace cert-manager --version v1.1.1 --set installCRDs=true
