@@ -82,6 +82,7 @@ jobs:
         # Add the custom resource file (points to the agent init container) and test application container to the cluster.
         run: |
           kubectl create namespace cert-manager
+          kubectl label namespace cert-manager certmanager.k8s.io/disable-validation="true"
           helm repo add jetstack https://charts.jetstack.io
           helm upgrade --install cert-manager jetstack/cert-manager --namespace cert-manager --version v1.1.1 --set installCRDs=true
           kubectl wait --for=condition=Ready --namespace cert-manager --all pods
