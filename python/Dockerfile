@@ -17,7 +17,8 @@ ENV NEW_RELIC_EXTENSIONS = False
 # capacity analysis instance busy metrics, that will not be available.
 # Pure Python versions of code supporting some features, rather than the
 # optimised C versions, will also be used resulting in additional overheads.
-ADD requirements.txt .
+
+# ADD requirements.txt .
 RUN mkdir workspace && pip install --target workspace newrelic==$version
 
 FROM busybox
