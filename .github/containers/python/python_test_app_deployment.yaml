@@ -20,8 +20,3 @@ spec:
         image: e2e/python_test_app
         ports:
           - containerPort: 5000
-  
-  type: ClusterIP
-  ports:
-  - port: 80
-    targetPort: 5000
