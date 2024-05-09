@@ -81,22 +81,24 @@ jobs:
         # Install the newrelic-agent-operator.
         # Add the custom resource file (points to the agent init container) and test application container to the cluster.
         run: |
-          kubectl create ns newrelic
-          kubectl create ns python-test
+          curl $(minikube service --wait 30 discover --url)/version
+
           kubectl create namespace cert-manager
-
           helm repo add jetstack https://charts.jetstack.io
-          helm install cert-manager jetstack/cert-manager --namespace cert-manager --version v1.1.1 --set installCRDs=true
-          kubectl wait --for=condition=Ready pod/$(kubectl get pods --namespace cert-manager | grep cert-manager-webhook | cut -d" " -f1)
+          helm upgrade --install cert-manager jetstack/cert-manager --namespace cert-manager --version v1.1.1 --set installCRDs=true
+          kubectl wait --for=condition=Ready --namespace cert-manager --all pods
 
+          kubectl create namespacens newrelic
           helm repo add newrelic-agent-operator https://newrelic-experimental.github.io/newrelic-agent-operator
           helm upgrade --install newrelic-agent-operator newrelic-agent-operator/newrelic-agent-operator --set licenseKey='SUPERSECRET' -n newrelic
+          kubectl wait --for=condition=Ready --namespace newrelic --all pods
 
+          kubectl create namespace python-test
           kubectl apply -f .github/containers/python/customresource.yaml -n python-test
           kubectl apply -f .github/containers/python/python_test_app_deployment.yaml -n python-test
+          kubectl wait --for=condition=Ready --namespace python-test --all pods
 
       # Wait 30 seconds for the cluster to start and then hit the test application endpoint.
       - name: Test
         run: |
-          curl $(minikube service --wait 30 discover --url)/version
           curl http://localhost:5000
