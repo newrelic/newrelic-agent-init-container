@@ -17,11 +17,11 @@ name: Test Python init container image
 on:
   # Allow manual trigger.
   workflow_dispatch: 
+  pull_request:
   push:
     # Run on push to main or PR. 
     branches:
       - main
-    pull_request:
     # Do not run when a tag is created.
     tags-ignore:
       - "**"
@@ -31,7 +31,7 @@ jobs:
 
     steps:
       - name: Checkout code
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # 4.1.1
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # 4.1.1
         with:
           persist-credentials: false
           fetch-depth: 0
