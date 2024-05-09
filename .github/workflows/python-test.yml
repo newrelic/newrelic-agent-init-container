@@ -25,6 +25,10 @@ on:
     # Do not run when a tag is created.
     tags-ignore:
       - "**"
+
+env:
+  E2E_IMAGE_NAME: e2e/initcontainer-python
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -44,16 +48,19 @@ jobs:
         id: meta
         uses: docker/metadata-action@8e5442c4ef9f78752691e2d8f8d19755c6f78e81 # 5.5.1
         with:
-          images: ghcr.io/${{ github.repository }}-python
-          flavor: |
-            prefix=
-            suffix=
-            latest=false
+          # images: ghcr.io/${{ github.repository }}-python
+          images: $E2E_IMAGE_NAME
           tags: |
-            type=raw,value=latest,enable={{is_default_branch}}
-            type=schedule,pattern={{date 'YYYY-MM-DD'}}
-            type=sha,format=short,prefix=sha-
-            type=sha,format=long,prefix=sha-
+            type=raw,value=e2e
+          # flavor: |
+          #   prefix=
+          #   suffix=
+          #   latest=false
+          # tags: |
+          #   type=raw,value=latest,enable={{is_default_branch}}
+          #   type=schedule,pattern={{date 'YYYY-MM-DD'}}
+          #   type=sha,format=short,prefix=sha-
+          #   type=sha,format=long,prefix=sha-
 
       - name: Login to GitHub Container Registry
         if: github.event_name != 'pull_request'
@@ -66,7 +73,8 @@ jobs:
       - name: Build and publish init container image
         uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0 # 5.3.0
         with:
-          push: ${{ github.event_name != 'pull_request' }}
+          push: false
+          # push: ${{ github.event_name != 'pull_request' }}
           context: python/
           platforms: ${{ (format('refs/heads/{0}', github.event.repository.default_branch) == github.ref) && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
           tags: ${{ steps.meta.outputs.tags }}
@@ -92,8 +100,8 @@ jobs:
       # Add the custom resource file (points to the agent init container) and test application container to the cluster.
       - name: Build test container
         run: |
-          docker build -t e2e/python_test_app:e2e .github/containers/python/
-          minikube image load e2e/python_test_app:e2e
+          docker build -t e2e/python-test-app:e2e .github/containers/python/
+          minikube image load e2e/python-test-app:e2e
 
       # Add the custom resource file (points to the agent init container) and test application container to the cluster.
       - name: Deploy test app to minikube
@@ -106,4 +114,4 @@ jobs:
       # Wait 30 seconds for the cluster to start and then hit the test application endpoint.
       - name: Test
         run: |
-          curl http://localhost:5000
+          curl http://localhost:8000
