@@ -91,8 +91,7 @@ jobs:
             --namespace cert-manager \
             --version v1.1.1 \
             --set installCRDs=true
-          CERT_MANAGER_POD=$(kubectl get pods --namespace cert-manager | grep cert-manager-webhook | cut -d" " -f1)
-          kubectl wait --for=condition=Ready $CERT_MANAGER_POD
+          kubectl wait --for=condition=Ready $(kubectl get pods --namespace cert-manager | grep cert-manager-webhook | cut -d" " -f1)
 
           helm repo add newrelic-agent-operator https://newrelic-experimental.github.io/newrelic-agent-operator
           helm upgrade --install newrelic-agent-operator newrelic-agent-operator/newrelic-agent-operator --set licenseKey='SUPERSECRET' -n newrelic
