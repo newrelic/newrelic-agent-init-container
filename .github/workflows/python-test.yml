@@ -49,7 +49,7 @@ jobs:
         uses: docker/metadata-action@8e5442c4ef9f78752691e2d8f8d19755c6f78e81 # 5.5.1
         with:
           # images: ghcr.io/${{ github.repository }}-python
-          images: $E2E_IMAGE_NAME
+          images: ${{ env.E2E_IMAGE_NAME }}
           tags: |
             type=raw,value=e2e
           # flavor: |
@@ -114,4 +114,4 @@ jobs:
       # Wait 30 seconds for the cluster to start and then hit the test application endpoint.
       - name: Test
         run: |
-          curl http://localhost:8000
+          curl --fail-with-body http://localhost:8000
