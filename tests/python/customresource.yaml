@@ -8,8 +8,16 @@ metadata:
   name: newrelic-instrumentation
 spec:
   python:
-    image: ghcr.io/${{ github.repository }}-python
+    image: e2e/initcontainer-python:e2e
     env:
       # Put the agent in developer mode so it doesn't try to connect to the real collector.
       - name: NEW_RELIC_DEVELOPER_MODE
-        value: true
+        value: "true"
+      - name: NEW_RELIC_STARTUP_TIMEOUT
+        value: "30"
+      
+      # TODO: Remove these hacks
+      - name: NEW_RELIC_STARTUP_DEBUG
+        value: "true"
+      - name: NEW_RELIC_K8S_OPERATOR_ENABLED
+        value: "true"

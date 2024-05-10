@@ -1,0 +1,23 @@
+description: |
+  End-to-end tests for python initcontainer
+
+scenarios:
+  - description: |
+      This scenario will verify that transactions are reported by the 
+    before:
+      - kubectl create namespace nr-${SCENARIO_TAG}
+      - kubectl apply -f ./customresource.yaml -n nr-${SCENARIO_TAG}
+      - kubectl apply -f ./python_test_app_deployment.yaml -n nr-${SCENARIO_TAG}
+      - sleep 10
+      - kubectl wait --for=condition=Ready --namespace nr-${SCENARIO_TAG} --all pods
+      - curl --fail-with-body $(minikube service python-test-app-service --url -n nr-${SCENARIO_TAG})
+    after:
+      - kubectl delete -f ./customresource.yaml -n nr-${SCENARIO_TAG}
+      - kubectl delete -f ./python_test_app_deployment.yaml -n nr-${SCENARIO_TAG}
+    tests:
+      nrqls:
+        - query: FROM Metric SELECT latest(something) AS 'start_time' WHERE metricName = 'k8s.persistentvolume.createdAt' AND appName = 'k8s-e2e-test-app-${SCENARIO_TAG:-0}'
+          expected_results:
+            - key: "start_time"
+              lowerBoundedValue: 0.0
+      entities: []
