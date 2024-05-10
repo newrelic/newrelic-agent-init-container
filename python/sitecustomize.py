@@ -82,20 +82,17 @@ root_directory = os.path.dirname(os.path.dirname(boot_directory))
 log_message("root_directory = %r", root_directory)
 log_message("boot_directory = %r", boot_directory)
 
-path = list(sys.path)
-
-if boot_directory in path:
-    del path[path.index(boot_directory)]
+del_sys_path_entry(boot_directory)
 
 try:
     if PY2:
         import imp
 
-        module_spec = imp.find_module("sitecustomize", path)
+        module_spec = imp.find_module("sitecustomize", sys.path)
     else:
         from importlib.machinery import PathFinder
 
-        module_spec = PathFinder.find_spec("sitecustomize", path=path)
+        module_spec = PathFinder.find_spec("sitecustomize", path=sys.path)
 
 except ImportError:
     pass
@@ -139,13 +136,14 @@ if k8s_operator_enabled or (python_prefix_matches and python_version_matches):
     # actually run based on the presence of the environment variables.
 
     license_key = os.environ.get("NEW_RELIC_LICENSE_KEY", None)
-
+    developer_mode = os.environ.get("NEW_RELIC_DEVELOPER_MODE", "off").lower() in ("on", "true", "1")
     config_file = os.environ.get("NEW_RELIC_CONFIG_FILE", None)
     environment = os.environ.get("NEW_RELIC_ENVIRONMENT", None)
+    initialize_agent = bool(license_key or config_file or developer_mode)
 
-    log_message("initialize_agent = %r", bool(license_key or config_file))
+    log_message("initialize_agent = %r", initialize_agent)
 
-    if license_key or config_file:
+    if initialize_agent:
 
         if k8s_operator_enabled:
             # When installed with the kubernetes operator, we need to attempt
@@ -154,16 +152,21 @@ if k8s_operator_enabled or (python_prefix_matches and python_version_matches):
             # rely on pip to identify the correct wheel to use. If no suitable
             # wheel can be found, we will fall back to the sdist and disable
             # extensions.
-            from newrelic_k8s_operator import insert_newrelic_distribution, INSTRUMENTATION_PATH
+            try:
+                sys.path.insert(0, boot_directory)
+                from newrelic_k8s_operator import insert_newrelic_distribution, INSTRUMENTATION_PATH
+            finally:
+                del_sys_path_entry(boot_directory)
 
             new_relic_path = insert_newrelic_distribution()
             log_message("Using New Relic distribution located at: %r" % new_relic_path)
 
             import newrelic.config
+            import newrelic.agent
 
             # Remove our sys.path entries to clean up imports
-            del_sys_path_entry(new_relic_path)
-            del_sys_path_entry(INSTRUMENTATION_PATH)
+            # del_sys_path_entry(new_relic_path)
+            # del_sys_path_entry(INSTRUMENTATION_PATH)
 
             log_message("agent_version = %r", newrelic.version)
 
@@ -192,6 +195,8 @@ if k8s_operator_enabled or (python_prefix_matches and python_version_matches):
         # Finally initialize the agent.
 
         newrelic.config.initialize(config_file, environment)
+    else:
+        log_message("New Relic could not start because due to missing configuration. Either NEW_RELIC_LICENSE_KEY or NEW_RELIC_CONFIG_FILE are required.")
 else:
     log_message(
         """New Relic could not start because the newrelic-admin script was called from a Python installation that is different from the Python installation that is currently running. To fix this problem, call the newrelic-admin script from the Python installation that is currently running (details below).

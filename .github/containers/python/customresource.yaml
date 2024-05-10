@@ -13,3 +13,11 @@ spec:
       # Put the agent in developer mode so it doesn't try to connect to the real collector.
       - name: NEW_RELIC_DEVELOPER_MODE
         value: "true"
+      - name: NEW_RELIC_STARTUP_TIMEOUT
+        value: "30"
+      
+      # TODO: Remove these hacks
+      - name: NEW_RELIC_STARTUP_DEBUG
+        value: "true"
+      - name: NEW_RELIC_K8S_OPERATOR_ENABLED
+        value: "true"

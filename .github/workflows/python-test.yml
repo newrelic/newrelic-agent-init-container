@@ -115,4 +115,4 @@ jobs:
       # Wait 30 seconds for the cluster to start and then hit the test application endpoint.
       - name: Test
         run: |
-          curl --fail-with-body http://localhost:8000
+          curl --fail-with-body $(minikube service python-test-app-service --url=true)
