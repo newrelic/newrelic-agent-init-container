@@ -105,15 +105,15 @@ jobs:
       # Add the custom resource file (points to the agent init container) and test application container to the cluster.
       - name: Build test app container
         run: |
-          docker build -t e2e/python-test-app:e2e .github/containers/python/
+          docker build -t e2e/python-test-app:e2e tests/python/
           minikube image load e2e/python-test-app:e2e
 
       # Add the custom resource file (points to the agent init container) and test application container to the cluster.
       - name: Deploy test app to minikube
         run: |
           kubectl create namespace python-test
-          kubectl apply -f .github/containers/python/customresource.yaml -n python-test
-          kubectl apply -f .github/containers/python/python_test_app_deployment.yaml -n python-test
+          kubectl apply -f tests/python/customresource.yaml -n python-test
+          kubectl apply -f tests/python/python_test_app_deployment.yaml -n python-test
           sleep 1
           kubectl wait --for=condition=Ready --namespace python-test --all pods
 
@@ -121,3 +121,14 @@ jobs:
       - name: Test
         run: |
           curl --fail-with-body $(minikube service python-test-app-service --url -n python-test)
+
+      - name: Run e2e-test
+        uses: newrelic/newrelic-integration-e2e-action@a97ced80a4841c8c6261d1f9dca6706b1d89acb1  # 1.11.0
+        with:
+          retry_seconds: 60
+          retry_attempts: 5
+          agent_enabled: false
+          spec_path: e2e/test-specs.yml
+          account_id: ${{ secrets.K8S_AGENTS_E2E_ACCOUNT_ID }}
+          api_key: ${{ secrets.K8S_AGENTS_E2E_API_KEY }}
+          license_key: ${{ secrets.K8S_AGENTS_E2E_LICENSE_KEY }}
