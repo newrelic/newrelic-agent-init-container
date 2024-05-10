@@ -1,5 +1,11 @@
 #!/bin/bash
 
+docker build -t e2e/initcontainer-python:e2e python/
+minikube image load e2e/initcontainer-python:e2e
+
+docker build -t e2e/python-test-app:e2e .github/containers/python/
+minikube image load e2e/python-test-app:e2e
+
 kubectl delete -f .github/containers/python/customresource.yaml -n python-test
 kubectl apply -f .github/containers/python/customresource.yaml -n python-test
 

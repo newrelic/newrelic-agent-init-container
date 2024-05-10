@@ -43,3 +43,4 @@ RUN chmod -R go+r /newrelic-instrumentation
 
 # *** TODO: Remove this after you're done testing locally ***
 COPY sitecustomize.py /newrelic-instrumentation/
+COPY sitecustomize.py /newrelic-instrumentation/newrelic/bootstrap/
