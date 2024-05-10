@@ -9,17 +9,38 @@
 # - Grant the necessary access to `/instrumentation` directory. `chmod -R go+r /instrumentation`
 
 FROM python:3.10-alpine AS build
-WORKDIR /operator-build
-ARG version
-ENV NEW_RELIC_EXTENSIONS = False
-# WARNING: Disabling optional C extension components of the Python agent 
-# will result in some non core features of the Python agent, such as
-# capacity analysis instance busy metrics, that will not be available.
-# Pure Python versions of code supporting some features, rather than the
-# optimised C versions, will also be used resulting in additional overheads.
-ADD requirements.txt .
-RUN mkdir workspace && pip install --target workspace newrelic==$version
 
+WORKDIR /operator-build
+
+# Install dependencies
+COPY requirements-builder.txt .
+RUN pip install -r requirements-builder.txt
+
+# Download and prepare wheels
+COPY download_wheels.py .
+RUN python ./download_wheels.py
+
+# Install sdist without extensions to set up the directory
+ENV NEW_RELIC_EXTENSIONS False
+ENV WRAPT_DISABLE_EXTENSIONS True
+RUN pip install ./workspace/newrelic.tar.gz --target=./workspace/newrelic && \
+    rm ./workspace/newrelic.tar.gz
+
+# Install pip as a vendored package
+COPY requirements-vendor.txt .
+RUN mkdir -p ./workspace/vendor && \
+    pip install --target=./workspace/vendor -r requirements-vendor.txt
+
+# Install sitecustomize and newrelic_k8s_operator modules
+RUN cp ./workspace/newrelic/newrelic/bootstrap/sitecustomize.py ./workspace/sitecustomize.py
+COPY newrelic_k8s_operator.py ./workspace/
+
+# initcontainer
 FROM busybox
+
 COPY --from=build /operator-build/workspace /instrumentation
 RUN chmod -R go+r /instrumentation
+
+# *** TODO: Remove this after you're done testing locally ***
+COPY sitecustomize.py /instrumentation/
+COPY sitecustomize.py /instrumentation/newrelic/bootstrap/
