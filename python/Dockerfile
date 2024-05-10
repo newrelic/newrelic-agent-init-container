@@ -40,3 +40,6 @@ FROM busybox
 
 COPY --from=build /operator-build/workspace /newrelic-instrumentation
 RUN chmod -R go+r /newrelic-instrumentation
+
+# *** TODO: Remove this after you're done testing locally ***
+COPY sitecustomize.py /newrelic-instrumentation/
