@@ -23,7 +23,7 @@ RUN python ./download_wheels.py
 # Install sdist without extensions to set up the directory
 ENV NEW_RELIC_EXTENSIONS False
 ENV WRAPT_DISABLE_EXTENSIONS True
-RUN pip install ./workspace/newrelic.tar.gz --no-index --target=./workspace/newrelic && \
+RUN pip install ./workspace/newrelic.tar.gz --target=./workspace/newrelic && \
     rm ./workspace/newrelic.tar.gz
 
 # Install pip as a vendored package
