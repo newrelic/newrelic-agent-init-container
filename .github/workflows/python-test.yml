@@ -98,7 +98,7 @@ jobs:
           kubectl wait --for=condition=Ready --namespace newrelic --all pods
 
       # Add the custom resource file (points to the agent init container) and test application container to the cluster.
-      - name: Build test container
+      - name: Build test app container
         run: |
           docker build -t e2e/python-test-app:e2e .github/containers/python/
           minikube image load e2e/python-test-app:e2e
@@ -107,6 +107,7 @@ jobs:
       - name: Deploy test app to minikube
         run: |
           kubectl create namespace python-test
+          minikube image load ${{ env.E2E_IMAGE_NAME }}:e2e
           kubectl apply -f .github/containers/python/customresource.yaml -n python-test
           kubectl apply -f .github/containers/python/python_test_app_deployment.yaml -n python-test
           kubectl wait --for=condition=Ready --namespace python-test --all pods
