@@ -70,15 +70,15 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and publish init container image
-        uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0 # 5.3.0
-        with:
-          push: false
-          # push: ${{ github.event_name != 'pull_request' }}
-          context: python/
-          platforms: ${{ (format('refs/heads/{0}', github.event.repository.default_branch) == github.ref) && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+      # - name: Build and publish init container image
+      #   uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0 # 5.3.0
+      #   with:
+      #     push: false
+      #     # push: ${{ github.event_name != 'pull_request' }}
+      #     context: python/
+      #     platforms: ${{ (format('refs/heads/{0}', github.event.repository.default_branch) == github.ref) && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
+      #     tags: ${{ steps.meta.outputs.tags }}
+      #     labels: ${{ steps.meta.outputs.labels }}
 
       - name: Start minikube
         uses: medyagh/setup-minikube@317d92317e473a10540357f1f4b2878b80ee7b95 # 0.0.16
@@ -95,6 +95,12 @@ jobs:
           helm repo add newrelic-agent-operator https://newrelic-experimental.github.io/newrelic-agent-operator
           helm upgrade --install newrelic-agent-operator newrelic-agent-operator/newrelic-agent-operator --set licenseKey='SUPERSECRET' -n newrelic
           kubectl wait --for=condition=Ready --namespace newrelic --all pods
+
+      # Add the custom resource file (points to the agent init container) and test application container to the cluster.
+      - name: Build init container
+        run: |
+          docker build -t ${{ env.E2E_IMAGE_NAME }}:e2e python/
+          minikube image load ${{ env.E2E_IMAGE_NAME }}:e2e
 
       # Add the custom resource file (points to the agent init container) and test application container to the cluster.
       - name: Build test app container
