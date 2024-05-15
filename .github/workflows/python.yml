@@ -110,7 +110,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@8e5442c4ef9f78752691e2d8f8d19755c6f78e81 # 5.5.1
         with:
-          images: newrelic/newrelic-agent-init-container-${{ env.INITCONTAINER_LANGUAGE }}
+          images: newrelic/newrelic-${{ env.INITCONTAINER_LANGUAGE }}-init
           tags: |
             type=raw,value=${{ steps.version.outputs.agent_version }}
             type=raw,value=latest
