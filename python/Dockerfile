@@ -17,6 +17,8 @@ COPY requirements-builder.txt .
 RUN pip install -r requirements-builder.txt
 
 # Download and prepare wheels
+ARG AGENT_VERSION
+ENV AGENT_VERSION=${AGENT_VERSION}
 COPY download_wheels.py .
 RUN python ./download_wheels.py
 

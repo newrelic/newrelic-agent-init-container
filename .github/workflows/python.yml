@@ -12,11 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 ---
-name: Build test and publish Python init container image
+name: Python Agent CI
 
 on:
-  # Allow manual trigger.
-  workflow_dispatch: 
   pull_request:
   push:
     # Run on push to main or PR. 
@@ -30,8 +28,7 @@ on:
       - published
 
 env:
-  CONTAINER_REGISTRY: docker.io
-  IMAGE_NAME_SUFFIX: python
+  INITCONTAINER_LANGUAGE: python
 
 jobs:
   test:
@@ -53,52 +50,39 @@ jobs:
       
       - name: Deploy cert-manager to minikube
         run: |
-          kubectl create namespace cert-manager
-          kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.14.5/cert-manager.yaml
-          kubectl wait --for=condition=Ready --namespace cert-manager --all pods
+          helm repo add jetstack https://charts.jetstack.io --force-update
+          helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version v1.14.5 --set installCRDs=true
+          sleep 5
+          kubectl wait --for=condition=Ready -n cert-manager --all pods
 
-      - name: Deploy newrelic-agent-operator to minikube
+      - name: Deploy New Relic k8s-agents-operator to minikube
         run: |
-          kubectl create namespace newrelic
-          helm repo add newrelic-agent-operator https://newrelic-experimental.github.io/newrelic-agent-operator
-          helm upgrade --install newrelic-agent-operator newrelic-agent-operator/newrelic-agent-operator --set licenseKey=${{ secrets.K8S_AGENTS_E2E_LICENSE_KEY }} -n newrelic
-          kubectl wait --for=condition=Ready --namespace newrelic --all pods
+          helm repo add k8s-agents-operator https://newrelic.github.io/k8s-agents-operator
+          helm upgrade --install k8s-agents-operator k8s-agents-operator/k8s-agents-operator --namespace=default --set=licenseKey=${{ secrets.NEW_RELIC_LICENSE_KEY }}
+          sleep 5
+          kubectl wait --for=condition=Ready -n default --all pods
 
       - name: Build init container
         run: |
-          docker build -t ${{ env.E2E_IMAGE_NAME }}:e2e python/
-          minikube image load ${{ env.E2E_IMAGE_NAME }}:e2e
+          minikube image build -t e2e/initcontainer-${{ env.INITCONTAINER_LANGUAGE }}:e2e ${{ env.INITCONTAINER_LANGUAGE }}/
 
       - name: Build test app container
         run: |
-          docker build -t e2e/python-test-app:e2e tests/python/
-          minikube image load e2e/python-test-app:e2e
+          minikube image build -t e2e/test-app-${{ env.INITCONTAINER_LANGUAGE }}:e2e tests/${{ env.INITCONTAINER_LANGUAGE }}/
 
-      - name: Deploy test app to minikube
-        run: |
-          kubectl create namespace python-test
-          kubectl apply -f tests/python/customresource.yaml -n python-test
-          kubectl apply -f tests/python/python_test_app_deployment.yaml -n python-test
-          sleep 5
-          kubectl wait --for=condition=Ready --namespace python-test --all pods
-
-      - name: Test
-        run: |
-          curl --fail-with-body $(minikube service python-test-app-service --url -n python-test)
-
-      # - name: Run e2e-test
-      #   uses: newrelic/newrelic-integration-e2e-action@a97ced80a4841c8c6261d1f9dca6706b1d89acb1  # 1.11.0
-      #   with:
-      #     retry_seconds: 60
-      #     retry_attempts: 5
-      #     agent_enabled: false
-      #     spec_path: tests/python/test-specs.yml
-      #     account_id: ${{ secrets.K8S_AGENTS_E2E_ACCOUNT_ID }}
-      #     api_key: ${{ secrets.K8S_AGENTS_E2E_API_KEY }}
-      #     license_key: ${{ secrets.K8S_AGENTS_E2E_LICENSE_KEY }}
+      - name: Run e2e-test
+        uses: newrelic/newrelic-integration-e2e-action@a97ced80a4841c8c6261d1f9dca6706b1d89acb1  # 1.11.0
+        with:
+          retry_seconds: 60
+          retry_attempts: 5
+          agent_enabled: false
+          spec_path: tests/${{ env.INITCONTAINER_LANGUAGE }}/test-specs.yml
+          account_id: ${{ secrets.NEW_RELIC_ACCOUNT_ID }}
+          api_key: ${{ secrets.NEW_RELIC_API_KEY }}
+          license_key: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
 
   publish:
-    if: ${{ github.event_name == 'release' }}
+    if: github.event_name == 'release' && endsWith(github.ref, '_python')
     runs-on: ubuntu-latest
     needs:
       - test
@@ -110,6 +94,14 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
 
+      - name: Extract Agent Version
+        id: version
+        run: |
+          agent_version=${{ github.ref_name }}  # Use tag name
+          agent_version=${agent_version##v}  # Remove v prefix
+          agent_version=${agent_version%%_${{ env.INITCONTAINER_LANGUAGE }}}  # Remove language suffix
+          echo "agent_version=${agent_version}" | tee -a "$GITHUB_OUTPUT"
+
       - name: Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@d70bba72b1f3fd22344832f00baa16ece964efeb # 3.3.0
@@ -118,30 +110,24 @@ jobs:
         id: meta
         uses: docker/metadata-action@8e5442c4ef9f78752691e2d8f8d19755c6f78e81 # 5.5.1
         with:
-          images: docker.io/${{ github.repository }}-${{ env.IMAGE_NAME_SUFFIX }}
+          images: newrelic/newrelic-agent-init-container-${{ env.INITCONTAINER_LANGUAGE }}
           tags: |
-            flavor: |
-              prefix=
-              suffix=
-              latest=auto
-            tags: |
-              type=sha,format=short,prefix=sha-
-              type=sha,format=long,prefix=sha-
-              type=semver,pattern={{version}}
-              type=semver,pattern={{major}}.{{minor}}
-              type=semver,pattern={{major}}
+            type=raw,value=${{ steps.version.outputs.agent_version }}
+            type=raw,value=latest
 
       - name: Login to Docker Hub Container Registry
         uses: docker/login-action@e92390c5fb421da1463c202d546fed0ec5c39f20 # 3.1.0
         with:
           username: ${{ github.repository_owner }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          password: ${{ secrets.DOCKER_TOKEN }}
 
       - name: Build and publish init container image
         uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0 # 5.3.0
         with:
           push: true
-          context: python/
+          context: ${{ env.INITCONTAINER_LANGUAGE }}/
           platforms: linux/amd64,linux/arm64,linux/arm
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            AGENT_VERSION=${{ steps.version.outputs.agent_version }}

@@ -2,22 +2,15 @@ description: |
   End-to-end tests for python initcontainer
 
 scenarios:
-  - description: |
-      This scenario will verify that transactions are reported by the 
+  - description: This scenario will verify that a transaction is reported by the test app after a curl request
     before:
-      - kubectl create namespace nr-${SCENARIO_TAG}
-      - kubectl apply -f ./customresource.yaml -n nr-${SCENARIO_TAG}
-      - kubectl apply -f ./python_test_app_deployment.yaml -n nr-${SCENARIO_TAG}
-      - sleep 10
-      - kubectl wait --for=condition=Ready --namespace nr-${SCENARIO_TAG} --all pods
-      - curl --fail-with-body $(minikube service python-test-app-service --url -n nr-${SCENARIO_TAG})
-    after:
-      - kubectl delete -f ./customresource.yaml -n nr-${SCENARIO_TAG}
-      - kubectl delete -f ./python_test_app_deployment.yaml -n nr-${SCENARIO_TAG}
+      - helm install test-python ./chart/ --set=scenarioTag="${SCENARIO_TAG}" -n default
+      - sleep 5
+      - kubectl wait --for=condition=Ready -n default --all pods
+      - curl --fail-with-body $(minikube service test-app-python-service --url -n default)
     tests:
       nrqls:
-        - query: FROM Metric SELECT latest(something) AS 'start_time' WHERE metricName = 'k8s.persistentvolume.createdAt' AND appName = 'k8s-e2e-test-app-${SCENARIO_TAG:-0}'
+        - query: SELECT latest(duration) AS duration FROM Transaction WHERE appName = 'k8s-e2e-test-app-python'
           expected_results:
-            - key: "start_time"
+            - key: "duration"
               lowerBoundedValue: 0.0
-      entities: []

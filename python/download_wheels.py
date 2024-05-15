@@ -19,7 +19,7 @@ import subprocess
 import tempfile
 
 
-AGENT_VERSION = "9.9.0"
+AGENT_VERSION = os.getenv("AGENT_VERSION", "").lstrip("v")
 FILE_DIR = os.path.dirname(__file__)
 WORKSPACE_DIR = os.path.join(FILE_DIR, "workspace")
 
@@ -31,8 +31,12 @@ def main():
         resp.raise_for_status()
         resp_dict = resp.json()
 
-        # Grab the correct release
-        release = resp_dict["releases"][AGENT_VERSION]
+        if AGENT_VERSION:
+            # Grab the supplied release version
+            release = resp_dict["releases"][AGENT_VERSION]
+        else:
+            # Grab latest release version
+            release = list(resp_dict["releases"].values())[-1]
 
         # Filter artifacts for wheels and tarballs
         wheel_urls = [
