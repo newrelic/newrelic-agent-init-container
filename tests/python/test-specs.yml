@@ -1,6 +1,5 @@
-description: |
-  End-to-end tests for python initcontainer
-
+description: End-to-end tests for python initcontainer
+custom_test_key: tags.testKey
 scenarios:
   - description: This scenario will verify that a transaction is reported by the test app after a curl request
     before:

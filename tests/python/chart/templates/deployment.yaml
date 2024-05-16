@@ -24,8 +24,8 @@ spec:
           env:
           - name: NEW_RELIC_APP_NAME
             value: k8s-e2e-test-app-python
-          - name: SCENARIO_TAG
-            value: {{ quote .Values.scenarioTag }}
+          - name: NEW_RELIC_LABELS
+            value: "testKey:{{ .Values.scenarioTag | default "NOTSET" }}"
 ---
 apiVersion: v1
 kind: Service

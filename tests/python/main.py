@@ -1,4 +1,3 @@
-import os
 import sys
 import traceback
 
@@ -10,10 +9,8 @@ app = Flask(__name__)
 @app.route("/")
 def hello_world():
     try:
-        from newrelic.agent import current_transaction, add_custom_attribute
-
+        from newrelic.agent import current_transaction
         assert current_transaction(), "No active transaction."
-        add_custom_attribute("testKey", os.getenv("SCENARIO_TAG", "NOTSET"))
     except Exception:
         return "".join(traceback.format_exception(*sys.exc_info())), 417
 
