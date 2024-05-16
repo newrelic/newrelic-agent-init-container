@@ -61,26 +61,14 @@ def get_supported_tags():
 
 
 def find_supported_newrelic_distribution():
-    wheels = list(os.listdir(INSTRUMENTATION_PATH))
-    for tag in get_supported_tags():
-        tag = str(tag)
-        for wheel in wheels:
-            if tag in wheel:
-                return str(os.path.join(INSTRUMENTATION_PATH, wheel))
-    else:
-        return SDIST_PATH
-
-
-def insert_newrelic_distribution():
-    # Find path of supported distribution
     try:
-        new_relic_path = find_supported_newrelic_distribution()
+        wheels = list(os.listdir(INSTRUMENTATION_PATH))
+        for tag in get_supported_tags():
+            tag = str(tag)
+            for wheel in wheels:
+                if tag in wheel:
+                    return str(os.path.join(INSTRUMENTATION_PATH, wheel))
     except Exception:
-        new_relic_path = SDIST_PATH
-    
-    # Add path to sys.path and import
-    sys.path.insert(0, new_relic_path)
-    import newrelic.config
+        pass
 
-    # Returned path will be logged and then removed from sys.path by sitecustomize
-    return new_relic_path
+    return SDIST_PATH

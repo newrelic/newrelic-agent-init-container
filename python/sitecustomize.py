@@ -77,9 +77,6 @@ for name in sorted(os.environ.keys()):
 # the search, and then load what was found.
 
 boot_directory = os.path.dirname(__file__)
-root_directory = os.path.dirname(os.path.dirname(boot_directory))
-
-log_message("root_directory = %r", root_directory)
 log_message("boot_directory = %r", boot_directory)
 
 del_sys_path_entry(boot_directory)
@@ -145,32 +142,7 @@ if k8s_operator_enabled or (python_prefix_matches and python_version_matches):
 
     if initialize_agent:
 
-        if k8s_operator_enabled:
-            # When installed with the kubernetes operator, we need to attempt
-            # to find a distribution from our initcontainer that matches the
-            # current environment. For wheels, this is platform dependent and we
-            # rely on pip to identify the correct wheel to use. If no suitable
-            # wheel can be found, we will fall back to the sdist and disable
-            # extensions.
-            try:
-                sys.path.insert(0, boot_directory)
-                from newrelic_k8s_operator import insert_newrelic_distribution, INSTRUMENTATION_PATH
-            finally:
-                del_sys_path_entry(boot_directory)
-
-            new_relic_path = insert_newrelic_distribution()
-            log_message("Using New Relic distribution located at: %r" % new_relic_path)
-
-            import newrelic.config
-            import newrelic.agent
-
-            # Remove our sys.path entries to clean up imports
-            # del_sys_path_entry(new_relic_path)
-            # del_sys_path_entry(INSTRUMENTATION_PATH)
-
-            log_message("agent_version = %r", newrelic.version)
-
-        else:
+        if not k8s_operator_enabled:
             # When installed as an egg with buildout, the root directory for
             # packages is not listed in sys.path and scripts instead set it
             # after Python has started up. This will cause importing of
@@ -180,20 +152,53 @@ if k8s_operator_enabled or (python_prefix_matches and python_version_matches):
             # 'newrelic' module to reduce chance that will cause any issues.
             # If it is a buildout created script, it will replace the whole
             # sys.path again later anyway.
+            root_directory = os.path.dirname(os.path.dirname(boot_directory))
+            log_message("root_directory = %r", root_directory)
 
+            new_relic_path = root_directory
             do_insert_path = root_directory not in sys.path
-            if do_insert_path:
-                sys.path.insert(0, root_directory)
+        else:
+            # When installed with the kubernetes operator, we need to attempt
+            # to find a distribution from our initcontainer that matches the
+            # current environment. For wheels, this is platform dependent and we
+            # rely on pip to identify the correct wheel to use. If no suitable
+            # wheel can be found, we will fall back to the sdist and disable
+            # extensions. Once the appropriate distribution is found, we import
+            # it and leave the entry in sys.path. This allows users to import
+            # the 'newrelic' module later and use our APIs in their code.
+            try:
+                sys.path.insert(0, boot_directory)
+                from newrelic_k8s_operator import find_supported_newrelic_distribution
+            finally:
+                del_sys_path_entry(boot_directory)
 
-            import newrelic.config
+            new_relic_path = find_supported_newrelic_distribution()
+            do_insert_path = True
+
+        # Now that the appropriate location of the module has been identified, 
+        # either by the kubernetes operator or this script, we are ready to import
+        # the 'newrelic' module to make it available in sys.modules. If the location
+        # containing it was not found on sys.path, do_insert_path will be set and
+        # the location will be inserted into sys.path. The module is then imported,
+        # and the sys.path entry is removed afterwards to reduce chance that will
+        # cause any issues.
+
+        log_message("new_relic_path = %r" % new_relic_path)
+        log_message("do_insert_path = %r" % do_insert_path)
+
+        try:
+            if do_insert_path:
+                sys.path.insert(0, new_relic_path)
+
+            import newrelic
 
             log_message("agent_version = %r", newrelic.version)
-
+        finally:
             if do_insert_path:
-                del_sys_path_entry(root_directory)
+                del_sys_path_entry(new_relic_path)
 
         # Finally initialize the agent.
-
+        import newrelic.config
         newrelic.config.initialize(config_file, environment)
     else:
         log_message("New Relic could not start because due to missing configuration. Either NEW_RELIC_LICENSE_KEY or NEW_RELIC_CONFIG_FILE are required.")
