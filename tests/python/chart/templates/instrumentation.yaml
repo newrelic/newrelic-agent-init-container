@@ -8,14 +8,10 @@ metadata:
   name: newrelic-instrumentation
 spec:
   python:
-    image: e2e/initcontainer-python:e2e
+    image: e2e/newrelic-python-init:e2e
     # Configure agent for testing using environment variables
     env:
       - name: NEW_RELIC_STARTUP_TIMEOUT
         value: "30"
       - name: NEW_RELIC_STARTUP_DEBUG
-        value: "true"
-
-      # TODO: Remove these hacks
-      - name: NEW_RELIC_K8S_OPERATOR_ENABLED
         value: "true"

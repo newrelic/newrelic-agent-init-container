@@ -29,6 +29,7 @@ on:
 
 env:
   INITCONTAINER_LANGUAGE: python
+  K8S_OPERATOR_IMAGE_TAG: edge
 
 jobs:
   test:
@@ -58,13 +59,16 @@ jobs:
       - name: Deploy New Relic k8s-agents-operator to minikube
         run: |
           helm repo add k8s-agents-operator https://newrelic.github.io/k8s-agents-operator
-          helm upgrade --install k8s-agents-operator k8s-agents-operator/k8s-agents-operator --namespace=default --set=licenseKey=${{ secrets.NEW_RELIC_LICENSE_KEY }}
+          helm upgrade --install k8s-agents-operator k8s-agents-operator/k8s-agents-operator \
+            --namespace=default \
+            --set=licenseKey=${{ secrets.NEW_RELIC_LICENSE_KEY }} \
+            --set=controllerManager.manager.image.tag=${{ env.K8S_OPERATOR_IMAGE_TAG }}
           sleep 5
           kubectl wait --for=condition=Ready -n default --all pods
 
       - name: Build init container
         run: |
-          minikube image build -t e2e/initcontainer-${{ env.INITCONTAINER_LANGUAGE }}:e2e ${{ env.INITCONTAINER_LANGUAGE }}/
+          minikube image build -t e2e/newrelic-${{ env.INITCONTAINER_LANGUAGE }}-init:e2e ${{ env.INITCONTAINER_LANGUAGE }}/
 
       - name: Build test app container
         run: |
