@@ -1,0 +1,2 @@
+requests
+setuptools>=40.8.0

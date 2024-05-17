@@ -1,0 +1,40 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-app-python
+spec:
+  selector:
+    matchLabels:
+      app: test-app-python
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: test-app-python
+      annotations:
+        instrumentation.newrelic.com/inject-python: "true"
+    spec:
+      containers:
+        - name: test-app-python
+          image: e2e/test-app-python:e2e
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8000
+          env:
+          - name: NEW_RELIC_APP_NAME
+            value: k8s-e2e-test-app-python
+          - name: NEW_RELIC_LABELS
+            value: "testKey:{{ .Values.scenarioTag | default "NOTSET" }}"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-app-python-service
+spec:
+  type: NodePort
+  ports:
+  - port: 8000
+    targetPort: 8000
+  selector:
+    app: test-app-python

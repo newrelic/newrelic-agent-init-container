@@ -1,0 +1,17 @@
+---
+apiVersion: newrelic.com/v1alpha1
+kind: Instrumentation
+metadata:
+  labels:
+    app.kubernetes.io/name: instrumentation
+    app.kubernetes.io/created-by: newrelic-agent-operator
+  name: newrelic-instrumentation
+spec:
+  python:
+    image: e2e/newrelic-python-init:e2e
+    # Configure agent for testing using environment variables
+    env:
+      - name: NEW_RELIC_STARTUP_TIMEOUT
+        value: "30"
+      - name: NEW_RELIC_STARTUP_DEBUG
+        value: "true"
