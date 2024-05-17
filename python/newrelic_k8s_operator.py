@@ -61,6 +61,9 @@ def get_supported_tags():
 
 
 def find_supported_newrelic_distribution():
+    """
+    Return the path to a supported wheel or sdist included under INSTRUMENTATION_PATH by the Python agent init container.
+    """
     try:
         wheels = list(os.listdir(INSTRUMENTATION_PATH))
         for tag in get_supported_tags():

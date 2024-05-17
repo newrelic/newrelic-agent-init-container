@@ -37,12 +37,11 @@ RUN mkdir -p ./workspace/vendor && \
 RUN cp ./workspace/newrelic/newrelic/bootstrap/sitecustomize.py ./workspace/sitecustomize.py
 COPY newrelic_k8s_operator.py ./workspace/
 
+# *** TODO: Remove this after sitecustomize changes have been released with the latest copy of the agent ***
+COPY sitecustomize.py ./workspace/sitecustomize.py
+
 # initcontainer
 FROM busybox
 
 COPY --from=build /operator-build/workspace /instrumentation
 RUN chmod -R go+r /instrumentation
-
-# *** TODO: Remove this after you're done testing locally ***
-COPY sitecustomize.py /instrumentation/
-COPY sitecustomize.py /instrumentation/newrelic/bootstrap/

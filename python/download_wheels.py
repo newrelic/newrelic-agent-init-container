@@ -25,6 +25,9 @@ WORKSPACE_DIR = os.path.join(FILE_DIR, "workspace")
 
 
 def main():
+    """
+    Download and unpack wheels and sdist for a given agent version as part of the build process for the Python agent init container.
+    """
     with requests.session() as session:
         # Fetch JSON list of all agent package artifacts
         resp = session.get("https://pypi.org/pypi/newrelic/json")
