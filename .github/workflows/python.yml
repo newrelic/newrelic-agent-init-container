@@ -68,7 +68,7 @@ jobs:
 
       - name: Build init container
         run: |
-          minikube image build -t e2e/newrelic-${{ env.INITCONTAINER_LANGUAGE }}-init:e2e ${{ env.INITCONTAINER_LANGUAGE }}/
+          minikube image build -t e2e/newrelic-${{ env.INITCONTAINER_LANGUAGE }}-init:e2e src/${{ env.INITCONTAINER_LANGUAGE }}/
 
       - name: Build test app container
         run: |
@@ -129,7 +129,7 @@ jobs:
         uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0 # 5.3.0
         with:
           push: true
-          context: ${{ env.INITCONTAINER_LANGUAGE }}/
+          context: src/${{ env.INITCONTAINER_LANGUAGE }}/
           platforms: linux/amd64,linux/arm64,linux/arm
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
