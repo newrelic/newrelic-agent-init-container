@@ -1,0 +1,7 @@
+# git ignore file
+
+# Visual Studio Solution preference files.
+.vs/
+
+# VS Code
+**/.vscode/
