@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 ---
-name: .NET Agent Test
+name: .NET Agent CI
 
 on:
   workflow_dispatch: # manually invoke to run test job only
@@ -71,7 +71,7 @@ jobs:
       - name: Harden Runner
         uses: step-security/harden-runner@a4aa98b93cab29d9b1101a6143fb8bce00e2eac4 # v2.7.1
         with:
-          disable-sudo: true
+          #disable-sudo: true
           egress-policy: audit
 
       - name: Set up Docker Buildx
@@ -85,6 +85,7 @@ jobs:
         run: |
           helm repo add jetstack https://charts.jetstack.io --force-update
           helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version v1.14.5 --set installCRDs=true
+          echo "waiting for cert-manager pods to be ready..."
           sleep 5
           kubectl wait --for=condition=Ready -n cert-manager --all pods --timeout=60s
 
