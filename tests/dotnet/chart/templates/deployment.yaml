@@ -33,8 +33,8 @@ spec:
           - name: NEW_RELIC_LOG_CONSOLE
             value: "1"
           # set the host to staging if using a staging license key
-          - name: NEW_RELIC_HOST
-            value: staging-collector.newrelic.com
+          #- name: NEW_RELIC_HOST
+          #  value: staging-collector.newrelic.com
 ---
 apiVersion: v1
 kind: Service
