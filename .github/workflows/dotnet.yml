@@ -68,11 +68,11 @@ jobs:
     if: needs.check-modified-files.outputs.dotnet-files-changed == 'true' || github.event_name == 'workflow_dispatch'
 
     steps:      
-      - name: Harden Runner
-        uses: step-security/harden-runner@a4aa98b93cab29d9b1101a6143fb8bce00e2eac4 # v2.7.1
-        with:
-          #disable-sudo: true
-          egress-policy: audit
+      # - name: Harden Runner
+      #   uses: step-security/harden-runner@a4aa98b93cab29d9b1101a6143fb8bce00e2eac4 # v2.7.1
+      #   with:
+      #     #disable-sudo: true
+      #     egress-policy: audit
 
       - name: Set up Docker Buildx
         id: buildx
