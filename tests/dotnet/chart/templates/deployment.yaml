@@ -26,7 +26,7 @@ spec:
             value: k8s-e2e-test-app-dotnet
           # used by the e2e Github action
           - name: NEW_RELIC_LABELS
-            value: "testKey:{{ .Values.scenarioTag | default "NOTSET" }}"
+            value: 'testKey:{{ .Values.scenarioTag | default "NOTSET" }}'
           # for testing, comment out if not needed
           - name: NEWRELIC_LOG_LEVEL
             value: finest
