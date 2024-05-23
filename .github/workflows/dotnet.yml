@@ -20,6 +20,11 @@ on:
   release: # run check modified files / test / publish jobs
     types:
       - published
+      
+# only allow one instance of this workflow to be running per PR or branch, cancels any that are already running
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
   
 env:
   K8S_OPERATOR_IMAGE_TAG: edge
