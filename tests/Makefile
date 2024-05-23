@@ -57,7 +57,7 @@ build-initcontainer: check-language-arg
 	minikube image build -t e2e/newrelic-${INITCONTAINER_LANGUAGE}-init:e2e src/${INITCONTAINER_LANGUAGE}/
 
 # Build local test app image
-.PHONY: build
+.PHONY: build-testapp
 build-testapp: check-language-arg
 	minikube image build -t e2e/test-app-${INITCONTAINER_LANGUAGE}:e2e tests/${INITCONTAINER_LANGUAGE}/
 
