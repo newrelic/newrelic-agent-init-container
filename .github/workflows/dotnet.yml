@@ -15,16 +15,15 @@
 name: .NET Agent CI
 
 on:
-  workflow_dispatch: # manually invoke to run test job only
-  pull_request: # run test job only
-  release: # run test and publish jobs
+  workflow_dispatch: # run test job only
+  pull_request: # run check modified files / test jobs
+  release: # run check modified files / test / publish jobs
     types:
       - published
   
 env:
-  INITCONTAINER_LANGUAGE: dotnet
   K8S_OPERATOR_IMAGE_TAG: edge
-  DOTNET_AGENT_ARCHITECTURE: amd64 # this value is also hard-coded in `tests/dotnet/chart/templates/instrumentation.yaml`
+  DOTNET_AGENT_ARCHITECTURE: amd64 # We will only test one architecture for now. Probably no need to test all of them
 
 permissions:
   contents: read
@@ -68,6 +67,7 @@ jobs:
     if: needs.check-modified-files.outputs.dotnet-files-changed == 'true' || github.event_name == 'workflow_dispatch'
 
     steps:      
+      # For some reason, Harden Runner causes setup-minikube to not work correctly
       # - name: Harden Runner
       #   uses: step-security/harden-runner@a4aa98b93cab29d9b1101a6143fb8bce00e2eac4 # v2.7.1
       #   with:
