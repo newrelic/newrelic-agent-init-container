@@ -52,7 +52,7 @@ operator-local:
 	kubectl wait --for=condition=Ready -n default --all pods
 
 # Build local initcontainer image
-.PHONY: build
+.PHONY: build-initcontainer
 build-initcontainer: check-language-arg
 	minikube image build -t e2e/newrelic-${INITCONTAINER_LANGUAGE}-init:e2e src/${INITCONTAINER_LANGUAGE}/
 
