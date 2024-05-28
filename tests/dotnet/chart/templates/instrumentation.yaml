@@ -1,0 +1,12 @@
+---
+apiVersion: newrelic.com/v1alpha1
+kind: Instrumentation
+metadata:
+  labels:
+    app.kubernetes.io/name: instrumentation
+    app.kubernetes.io/created-by: newrelic-agent-operator
+  name: newrelic-instrumentation
+spec:
+  dotnet:
+    image: e2e/newrelic-dotnet-init:e2e
+

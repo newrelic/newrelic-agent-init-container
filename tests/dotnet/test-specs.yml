@@ -1,0 +1,15 @@
+description: End-to-end tests for dotnet initcontainer
+custom_test_key: tags.testKey
+scenarios:
+  - description: This scenario will verify that a transaction is reported by the test app after a curl request
+    before:
+      - helm install test-dotnet ./chart/ --set=scenarioTag="${SCENARIO_TAG}" -n default
+      - sleep 5
+      - kubectl wait --for=condition=Ready -n default --all pods
+      - curl --fail-with-body $(minikube service test-app-dotnet-service --url -n default)/WeatherForecast
+    tests:
+      nrqls:
+        - query: SELECT latest(duration) AS duration FROM Transaction WHERE appName = 'k8s-e2e-test-app-dotnet'
+          expected_results:
+            - key: "duration"
+              lowerBoundedValue: 0.0

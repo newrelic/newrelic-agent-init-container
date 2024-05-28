@@ -1,0 +1,48 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-app-dotnet
+spec:
+  selector:
+    matchLabels:
+      app: test-app-dotnet
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: test-app-dotnet
+      annotations:
+        instrumentation.newrelic.com/inject-dotnet: "true"
+    spec:
+      containers:
+        - name: test-app-dotnet
+          image: e2e/test-app-dotnet:e2e
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 80
+          env:
+          - name: NEW_RELIC_APP_NAME
+            value: k8s-e2e-test-app-dotnet
+          # used by the e2e Github action
+          - name: NEW_RELIC_LABELS
+            value: 'testKey:{{ .Values.scenarioTag | default "NOTSET" }}'
+          # for testing, comment out if not needed
+          - name: NEWRELIC_LOG_LEVEL
+            value: finest
+          - name: NEW_RELIC_LOG_CONSOLE
+            value: "1"
+          # set the host to staging if using a staging license key
+          #- name: NEW_RELIC_HOST
+          #  value: staging-collector.newrelic.com
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-app-dotnet-service
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+  selector:
+    app: test-app-dotnet
