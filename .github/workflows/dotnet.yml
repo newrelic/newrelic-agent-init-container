@@ -36,40 +36,19 @@ permissions:
 jobs:
   check-modified-files:
     name: Check whether any Dotnet-related files were modified, skip the test job if not
-    runs-on: ubuntu-latest
-    outputs:
-      dotnet-files-changed: ${{ steps.changes.outputs.dotnet-files-changed }}
-
-    steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@a4aa98b93cab29d9b1101a6143fb8bce00e2eac4 # v2.7.1
-        with:
-          disable-sudo: true
-          egress-policy: audit
-
-      - name: Checkout code
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # 4.1.1
-        with:
-          persist-credentials: false
-          fetch-depth: 0
-
-      - name: Check whether files were modified that affect .NET build/test/publish
-        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
-        id: changes
-        with:
-          base: ${{ github.ref }}
-          filters: |
-            dotnet-files-changed:
-              - '.github/workflows/dotnet.yml'
-              - 'src/dotnet/**'
-              - 'tests/dotnet/**'
+    uses: ./.github/workflows/check-modified-files.yml
+    secrets: inherit
+    permissions:
+      contents: read
+    with:
+      agent-language: dotnet
 
   test:
     name: Run Dotnet init container tests
     runs-on: ubuntu-latest
     needs: check-modified-files
     # run only if files were modified or the workflow was manually invoked
-    if: needs.check-modified-files.outputs.dotnet-files-changed == 'true' || github.event_name == 'workflow_dispatch'
+    if: needs.check-modified-files.outputs.files-changed == 'true' || github.event_name == 'workflow_dispatch'
 
     steps:      
       # For some reason, Harden Runner causes setup-minikube to not work correctly
