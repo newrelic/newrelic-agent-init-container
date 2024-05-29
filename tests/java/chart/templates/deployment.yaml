@@ -1,0 +1,53 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-app-java
+spec:
+  selector:
+    matchLabels:
+      app: test-app-java
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: test-app-java
+      annotations:
+        instrumentation.newrelic.com/inject-java: "true"
+    spec:
+      containers:
+        - name: test-app-java
+          image: e2e/test-app-java:e2e
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          env:
+          - name: NEW_RELIC_APP_NAME
+            value: k8s-e2e-test-app-java
+          - name: NEW_RELIC_LABELS # labels used by the e2e Github action
+            value: "testKey:{{ .Values.scenarioTag | default "NOTSET" }}"
+          - name: NEW_RELIC_SYNC_STARTUP
+            value: "true"
+          - name: NEW_RELIC_SEND_DATA_ON_EXIT
+            value: "true"
+          - name: NEW_RELIC_SEND_DATA_ON_EXIT_THRESHOLD
+            value: "0"
+          # for testing, comment out if not needed
+          #- name: NEW_RELIC_LOG_LEVEL
+          #  value: finest
+          # set the host to staging if using a staging license key
+          #- name: NEW_RELIC_HOST
+          #  value: staging-collector.newrelic.com
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-app-java-service
+spec:
+  type: NodePort
+  ports:
+  - port: 8080
+    targetPort: 8080
+  selector:
+    app: test-app-java
