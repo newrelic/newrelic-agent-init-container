@@ -8,3 +8,5 @@
 
 # IntelliJ IDEA
 .idea/
+
+*.DS_Store

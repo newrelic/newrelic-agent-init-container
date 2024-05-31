@@ -89,8 +89,9 @@ jobs:
           kubectl wait --for=condition=Ready -n default --all pods --timeout=60s
 
       - name: Build init container for e2e test
+        # When the init container image is built without specifying the agent version via a build arg, the current agent version published to download.newrelic.com will be used.
         run: |
-          minikube image build -t e2e/newrelic-java-init:e2e src/java/
+          minikube image build -t e2e/newrelic-java-init:e2e src/java/ 
 
       - name: Build test app container
         run: |
