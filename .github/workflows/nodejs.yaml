@@ -1,0 +1,81 @@
+name: "NodeJs Init Container CI"
+
+on:
+  pull_request:
+    paths:
+      - 'src/nodejs/**'
+      - '.github/workflows/nodejs.yaml'
+  push:
+    paths:
+      - 'nodejs/**'
+      - '.github/workflows/nodejs.yaml'
+    branches:
+      - main
+    # Do not run when a tag is created.
+    tags-ignore:
+      - "**"
+  release:
+    types:
+      - published
+  workflow_dispatch:
+
+env:
+  INITCONTAINER_LANGUAGE: nodejs
+  K8S_OPERATOR_IMAGE_TAG: edge
+
+jobs:
+  set-agent-version:
+    if: github.event_name == 'release' && endsWith(github.ref, '_nodejs') # Skip everything if this isn't Node
+    runs-on: ubuntu-latest
+
+  call-test:
+    uses: ./.github/workflows/test.yml
+    with:
+      node-version: ${{ matrix.node-version }}
+
+  call-publish:
+    runs-on: ubuntu-latest
+    needs:
+      - set-agent-version
+      - call-test
+
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [16, 18, 20]
+        agent-version: ['latest']
+
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          INITCONTAINER_LANGUAGE: ${{ env.INITCONTAINER_LANGUAGE }}
+          K8S_OPERATOR_IMAGE_TAG: ${{ env.K8S_OPERATOR_IMAGE_TAG }}
+          RUNTIME_VERSION: ${{ matrix.node-version }}
+
+      - name: Get agent version
+        run: |
+          if [[ ${{ matrix.agent-version }} == 'latest' ]]; then
+            cd nodejs && npm i newrelic@${{ matrix.agent-version }} && cd ..
+            echo AGENT_VERSION=$(cat nodejs/package.json | jq -r '.dependencies."newrelic"') >> $GITHUB_ENV 
+          elif 
+            echo AGENT_VERSION=${{ matrix.agent-version }} >> $GITHUB_ENV 
+          fi
+
+      - name: Format Agent Version
+        id: version
+        run: |
+          agent_version=${{ env.AGENT_VERSION }}  # Use output
+          echo NEW_RELIC_AGENT_VERSION=${{ env.AGENT_VERSION }} >> $GITHUB_ENV # Make ure to send the agent version to the dockerfile
+          agent_version=${agent_version##v}  # Remove v prefix
+          agent_version=${agent_version%%_${{ env.INITCONTAINER_LANGUAGE }}}  # Remove language suffix
+          agent_version=${agent_version}}_nodejs${{ matrix.node-version }}x  # Add Node runtime
+          echo "agent_version=${agent_version}" | tee -a "$GITHUB_OUTPUT"
+
+      - name: Call Publish Workflow for ${{ matrix.node-version }}
+        uses: ./.github/workflows/publish.yml
+        with:
+          INITCONTAINER_LANGUAGE: ${{ env.INITCONTAINER_LANGUAGE }}
+          K8S_OPERATOR_IMAGE_TAG: ${{ env.K8S_OPERATOR_IMAGE_TAG }}
+          NEW_RELIC_AGENT_VERSION: ${{ env.NEW_RELIC_AGENT_VERSION }}
+          AGENT_VERSION_TAG: ${{steps.version.output.agent_version}}
+          RUNTIME_VERSION: ${{ matrix.node-version }}

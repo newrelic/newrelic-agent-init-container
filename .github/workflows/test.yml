@@ -1,0 +1,82 @@
+# Copyright 2010 New Relic, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+---
+name: Init Container Test
+
+on:
+  workflow_call:
+    inputs:
+      INITCONTAINER_LANGUAGE:
+        required: true
+        type: string
+      K8S_OPERATOR_IMAGE_TAG:
+        required: true
+        type: string
+      RUNTIME_VERSION:
+        required: false
+        type: string
+
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # 4.1.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@d70bba72b1f3fd22344832f00baa16ece964efeb # 3.3.0
+
+      - name: Start minikube
+        uses: medyagh/setup-minikube@317d92317e473a10540357f1f4b2878b80ee7b95 # 0.0.16
+
+      - name: Deploy cert-manager to minikube
+        run: |
+          helm repo add jetstack https://charts.jetstack.io --force-update
+          helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version v1.14.5 --set installCRDs=true
+          sleep 5
+          kubectl wait --for=condition=Ready -n cert-manager --all pods
+
+      - name: Deploy New Relic k8s-agents-operator to minikube
+        run: |
+          helm repo add k8s-agents-operator https://newrelic.github.io/k8s-agents-operator
+          helm upgrade --install k8s-agents-operator k8s-agents-operator/k8s-agents-operator \
+            --namespace=default \
+            --set=licenseKey=${{ secrets.NEW_RELIC_LICENSE_KEY }} \
+            --set=controllerManager.manager.image.tag=${{ inputs.K8S_OPERATOR_IMAGE_TAG }}
+          sleep 5
+          kubectl wait --for=condition=Ready -n default --all pods
+
+      - name: Build init container
+        run: |
+          minikube image build -t e2e/newrelic-${{ inputs.INITCONTAINER_LANGUAGE }}-init:e2e src/${{ inputs.INITCONTAINER_LANGUAGE }}/
+
+      - name: Build test app container
+        run: |
+          minikube image build -t e2e/test-app-${{ inputs.INITCONTAINER_LANGUAGE }}:e2e tests/${{ inputs.INITCONTAINER_LANGUAGE }}/
+
+      - name: Run e2e-test
+        uses: newrelic/newrelic-integration-e2e-action@a97ced80a4841c8c6261d1f9dca6706b1d89acb1  # 1.11.0
+        with:
+          retry_seconds: 60
+          retry_attempts: 5
+          agent_enabled: false
+          spec_path: tests/${{ inputs.INITCONTAINER_LANGUAGE }}/test-specs.yml
+          account_id: ${{ secrets.NEW_RELIC_ACCOUNT_ID }}
+          api_key: ${{ secrets.NEW_RELIC_API_KEY }}
+          license_key: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
