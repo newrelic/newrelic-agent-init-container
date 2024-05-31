@@ -6,13 +6,13 @@
 #   Then in the second stage, copy the directory to `/instrumentation`.
 # - Ensure you have `newrelic`, and`@newrelic/native-metrics`.
 # - Grant the necessary access to `/instrumentation` directory. `chmod -R go+r /instrumentation`
-ARG NODE_RUNTIME_VERSION=20
-ARG NEWRELIC_NODE_AGENT_VERSION=latest
+ARG RUNTIME_VERSION=20
+ARG NEW_RELIC_AGENT_VERSION=latest
 
-FROM node:${NODE_RUNTIME_VERSION} AS build
+FROM node:${RUNTIME_VERSION} AS build
 WORKDIR /operator-build
 COPY . .
-RUN npm install newrelic@${NEWRELIC_NODE_AGENT_VERSION}
+RUN npm install newrelic@${NEW_RELIC_AGENT_VERSION}
 
 FROM busybox
 COPY --from=build /operator-build/build/workspace /instrumentation
