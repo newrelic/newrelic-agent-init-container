@@ -1,14 +1,29 @@
+# Copyright 2010 New Relic, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+---
+
 name: "NodeJs Init Container CI"
 
 on:
   pull_request:
     paths:
       - 'src/nodejs/**'
-      - '.github/workflows/nodejs.yaml'
+      - '.github/workflows/nodejs.yml'
   push:
     paths:
       - 'nodejs/**'
-      - '.github/workflows/nodejs.yaml'
+      - '.github/workflows/nodejs.yml'
     branches:
       - main
     # Do not run when a tag is created.
@@ -24,19 +39,17 @@ env:
   K8S_OPERATOR_IMAGE_TAG: edge
 
 jobs:
-  set-agent-version:
-    if: github.event_name == 'release' && endsWith(github.ref, '_nodejs') # Skip everything if this isn't Node
-    runs-on: ubuntu-latest
-
   call-test:
+    if: github.event_name == 'release' && endsWith(github.ref, '_nodejs') # Skip everything if this isn't Node
     uses: ./.github/workflows/test.yml
     with:
-      node-version: ${{ matrix.node-version }}
+      RUNTIME_VERSION: ${{ matrix.node-version }}
+      INITCONTAINER_LANGUAGE: ${{ env.INITCONTAINER_LANGUAGE }}
+      K8S_OPERATOR_IMAGE_TAG: ${{ env.K8S_OPERATOR_IMAGE_TAG }}
 
   call-publish:
     runs-on: ubuntu-latest
     needs:
-      - set-agent-version
       - call-test
 
     strategy:

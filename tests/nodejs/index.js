@@ -1,4 +1,3 @@
-const newrelic = require('newrelic')
 const http = require('http')
 
 const PAYLOAD = JSON.stringify({ msg: 'ok' })
@@ -41,7 +40,6 @@ function makeRequest(params, cb) {
 }
 
 function startServer () {
-
     const external = http.createServer(function (request, response) {
         response.writeHead(200, {
             'Content-Length': PAYLOAD.length,
@@ -51,9 +49,6 @@ function startServer () {
     })
 
     const server = http.createServer(function (request, response) {
-        transaction = newrelic.getTransaction()
-        t.ok(transaction, 'created transaction')
-
         if (/\/slow$/.test(request.url)) {
             setTimeout(function () {
                 response.writeHead(200, {
@@ -64,10 +59,9 @@ function startServer () {
             }, 500)
             return
         }
-
         makeRequest(
             {
-                port: 8321,
+                port: 8000,
                 host: 'localhost',
                 path: '/status',
                 method: 'GET'
@@ -82,16 +76,11 @@ function startServer () {
         )
     })
 
-    server.on('request', function () {
-        transaction2 = agent.getTransaction()
-    })
-
     return new Promise((resolve) => {
-        external.listen(8321, 'localhost', function () {
-            server.listen(8123, 'localhost', function () {
+        external.listen(8000, 'localhost', function () {
+            server.listen(8001, 'localhost', function () {
                 // The transaction doesn't get created until after the instrumented
                 // server handler fires.
-                t.notOk(agent.getTransaction())
                 resolve()
             })
         })

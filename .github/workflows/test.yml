@@ -41,6 +41,8 @@ jobs:
       - name: Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@d70bba72b1f3fd22344832f00baa16ece964efeb # 3.3.0
+        with:
+          RUNTIME_VERSION: ${{ inputs.RUNTIME_VERSION }}
 
       - name: Start minikube
         uses: medyagh/setup-minikube@317d92317e473a10540357f1f4b2878b80ee7b95 # 0.0.16
@@ -80,3 +82,4 @@ jobs:
           account_id: ${{ secrets.NEW_RELIC_ACCOUNT_ID }}
           api_key: ${{ secrets.NEW_RELIC_API_KEY }}
           license_key: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
+          app_name: k8s-e2e-test-app-${{ inputs.INITCONTAINER_LANGUAGE }}
