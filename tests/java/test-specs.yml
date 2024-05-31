@@ -4,7 +4,7 @@ scenarios:
   - description: This scenario will verify that a transaction is reported by the test app after a curl request
     before:
       - helm install test-java ./chart/ --set=scenarioTag="${SCENARIO_TAG}" -n default
-      - sleep 5
+      - sleep 120
       - kubectl wait --for=condition=Ready -n default --all pods
       - curl --fail-with-body $(minikube service test-app-java-service --url -n default)
     tests:
