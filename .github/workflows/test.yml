@@ -80,3 +80,4 @@ jobs:
           account_id: ${{ secrets.NEW_RELIC_ACCOUNT_ID }}
           api_key: ${{ secrets.NEW_RELIC_API_KEY }}
           license_key: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
+          app_name: k8s-e2e-test-app-${{ inputs.INITCONTAINER_LANGUAGE }}
