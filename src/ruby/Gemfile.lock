@@ -1,0 +1,16 @@
+# This file only exists to satisfy FOSSA security scan. It is not used.
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    newrelic_rpm (9.9.0)
+
+PLATFORMS
+  ruby
+  x86_64-darwin-23
+
+DEPENDENCIES
+  newrelic_rpm
+
+BUNDLED WITH
+   2.5.6
