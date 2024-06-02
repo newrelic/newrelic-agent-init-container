@@ -5,3 +5,8 @@
 
 # VS Code
 **/.vscode/
+
+# IntelliJ IDEA
+.idea/
+
+*.DS_Store
