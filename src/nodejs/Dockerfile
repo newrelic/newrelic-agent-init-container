@@ -10,10 +10,16 @@ ARG RUNTIME_VERSION=20
 ARG NEW_RELIC_AGENT_VERSION=latest
 
 FROM node:${RUNTIME_VERSION} AS build
-WORKDIR /operator-build
-COPY . .
+
+WORKDIR /instrumentation
+
+# Install dependencies
 RUN npm install newrelic@${NEW_RELIC_AGENT_VERSION}
 
+# copy instrumentation file
+COPY newrelicinstrumentation.js .
+
+# initcontainer
 FROM busybox
-COPY --from=build /operator-build/build/workspace /instrumentation
+COPY --from=build /instrumentation /instrumentation
 RUN chmod -R go+r /instrumentation
