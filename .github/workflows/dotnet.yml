@@ -115,9 +115,8 @@ jobs:
 
   publish:
     runs-on: ubuntu-latest
-    needs: test
     # only publish on a dotnet release
-    if: github.event_name == 'release' && endsWith(github.ref, '_dotnet')
+    if: github.event_name == 'release' && endsWith(github.ref_name, '_dotnet')
 
     steps:
       - name: Harden Runner
