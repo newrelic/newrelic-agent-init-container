@@ -155,8 +155,8 @@ jobs:
       - name: Login to Docker Hub Container Registry
         uses: docker/login-action@e92390c5fb421da1463c202d546fed0ec5c39f20 # 3.1.0
         with:
-          username: pythonagentteambot463  # for testing, this will be a different username at some point
-          password: ${{ secrets.DOCKER_TOKEN }}
+          username: ${{ secrets.DOTNET_DOCKERHUB_USERNAME}}
+          password: ${{ secrets.DOTNET_DOCKERHUB_TOKEN }}
 
       - name: Build and publish .NET Agent multi-arch init container image
         uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0 # 5.3.0
