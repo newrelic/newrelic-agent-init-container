@@ -30,6 +30,7 @@ on:
 env:
   INITCONTAINER_LANGUAGE: python
   K8S_OPERATOR_IMAGE_TAG: edge
+  AGENT_VERSION_LENGTH: 3
 
 jobs:
   check-modified-files:
@@ -104,6 +105,12 @@ jobs:
       - test
 
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@a4aa98b93cab29d9b1101a6143fb8bce00e2eac4 # v2.7.1
+        with:
+          disable-sudo: true
+          egress-policy: audit
+
       - name: Checkout code
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # 4.1.1
         with:
@@ -112,11 +119,7 @@ jobs:
 
       - name: Extract Agent Version
         id: version
-        run: |
-          agent_version=${{ github.ref_name }}  # Use tag name
-          agent_version=${agent_version##v}  # Remove v prefix
-          agent_version=${agent_version%%_${{ env.INITCONTAINER_LANGUAGE }}}  # Remove language suffix
-          echo "agent_version=${agent_version}" | tee -a "$GITHUB_OUTPUT"
+        uses: ./.github/actions/extract_agent_version_tags
 
       - name: Set up Docker Buildx
         id: buildx
@@ -129,6 +132,12 @@ jobs:
           images: newrelic/newrelic-${{ env.INITCONTAINER_LANGUAGE }}-init
           tags: |
             type=raw,value=${{ steps.version.outputs.agent_version }}
+            type=raw,value=${{ steps.version.outputs.full }},enabled=${{ steps.version.outputs.full_enabled }}
+            type=raw,value=${{ steps.version.outputs.major }},enabled=${{ steps.version.outputs.major_enabled }}
+            type=raw,value=${{ steps.version.outputs.minor }},enabled=${{ steps.version.outputs.minor_enabled }}
+            type=raw,value=${{ steps.version.outputs.patch }},enabled=${{ steps.version.outputs.patch_enabled }}
+            type=raw,value=${{ steps.version.outputs.build }},enabled=${{ steps.version.outputs.build_enabled }}
+            type=raw,value=${{ steps.version.outputs.subbuild }},enabled=${{ steps.version.outputs.subbuild_enabled }}
             type=raw,value=latest
 
       - name: Login to Docker Hub Container Registry
@@ -146,4 +155,4 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            AGENT_VERSION=${{ steps.version.outputs.agent_version }}
+            AGENT_VERSION=${{ env.AGENT_VERSION_LENGTH == 3 && steps.version.outputs.patch || steps.version.outputs.build }}

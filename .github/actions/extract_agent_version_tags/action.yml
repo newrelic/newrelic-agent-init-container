@@ -1,0 +1,76 @@
+name: 'Extract Agent Version Tags'
+description: 'Extract agent version into tags for use with the Docker Metadata action.'
+outputs:
+  full:
+    description: "Full agent version"
+    value: ${{ steps.version.outputs.full }}
+  major:
+    description: "Sliced agent version up through major"
+    value: ${{ steps.version.outputs.major }}
+  minor:
+    description: "Sliced agent version up through minor"
+    value: ${{ steps.version.outputs.minor }}
+  patch:
+    description: "Sliced agent version up through patch"
+    value: ${{ steps.version.outputs.patch }}
+  build:
+    description: "Sliced agent version up through build"
+    value: ${{ steps.version.outputs.build }}
+  subbuild:
+    description: "Sliced agent version up through subbuild"
+    value: ${{ steps.version.outputs.subbuild }}
+  full_enabled:
+    description: "Enabled flag for tag created from full version"
+    value: ${{ steps.version.outputs.full }}
+  major_enabled:
+    description: "Enabled flag for tag created from major version"
+    value: ${{ steps.version.outputs.major }}
+  minor_enabled:
+    description: "Enabled flag for tag created from minor version"
+    value: ${{ steps.version.outputs.minor }}
+  patch_enabled:
+    description: "Enabled flag for tag created from patch version"
+    value: ${{ steps.version.outputs.patch }}
+  build_enabled:
+    description: "Enabled flag for tag created from build version"
+    value: ${{ steps.version.outputs.build }}
+  subbuild_enabled:
+    description: "Enabled flag for tag created from subbuild version"
+    value: ${{ steps.version.outputs.subbuild }}
+runs:
+  using: "composite"
+  steps:
+    - name: Extract Agent Version
+      id: version
+      shell: bash
+      run: |
+          version_array=()
+          version_names=("full" "major" "minor" "patch" "build" "subbuild")
+          add_outputs_for_version_len() {
+              version_len=$1
+              version_name="${version_names[version_len]}"
+              if [[ version_len -gt ${#version_array[@]} ]]; then
+                  output ${version_name} ''
+                  output ${version_name}.enabled false
+              else
+                  if [[ ${version_len} -ne 0 ]]; then
+                      sliced_version=$(echo ${version_array[@]:0:${version_len}} | sed "s/ /./g")
+                  else
+                      sliced_version=$(echo ${version_array[@]} | sed "s/ /./g")
+                  fi
+                  output ${version_name} ${sliced_version}
+                  output ${version_name}.enabled true
+              fi
+          }
+          
+          output() {
+              echo "$1=$2" | tee -a $GITHUB_OUTPUT
+          }
+  
+          agent_version=${{ github.ref_name }}  # Use release tag
+          agent_version=$(echo $agent_version | sed -e "s/^v//g" -e "s/_[a-zA-Z]*//g")  # Remove v prefix and language suffix
+  
+          IFS="$IFS."
+          for i in $agent_version; do version_array+=($i); done  # Split agent version to array
+          IFS="${IFS:0:3}"
+          for i in {0..5}; do add_outputs_for_version_len $i; done  # Add version outputs for each version length
