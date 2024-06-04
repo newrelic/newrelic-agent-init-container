@@ -17,7 +17,7 @@ name: .NET Agent CI
 on:
   workflow_dispatch: # run test job only
   pull_request: # run check modified files / test jobs
-  release: # run publish job only
+  release: # run check modified files / test / publish jobs
     types:
       - published
       
@@ -37,8 +37,6 @@ jobs:
   check-modified-files:
     name: Check whether any Dotnet-related files were modified, skip the test job if not
     uses: ./.github/workflows/check-modified-files.yml
-    # don't check for modified files on a release
-    if: github.event_name != 'release'
     secrets: inherit
     permissions:
       contents: read
@@ -49,8 +47,8 @@ jobs:
     name: Run Dotnet init container tests
     runs-on: ubuntu-latest
     needs: check-modified-files
-    # run only if files were modified or the workflow was manually invoked
-    if: needs.check-modified-files.outputs.files-changed == 'true' || github.event_name == 'workflow_dispatch'
+    # run only if files were modified or the workflow was manually invoked or on a publish
+    if: needs.check-modified-files.outputs.files-changed == 'true' || github.event_name == 'workflow_dispatch' || (github.event_name == 'release' && endsWith(github.ref_name, '_dotnet'))
 
     steps:      
       # For some reason, Harden Runner causes setup-minikube to not work correctly
@@ -117,6 +115,8 @@ jobs:
     runs-on: ubuntu-latest
     # only publish on a dotnet release
     if: github.event_name == 'release' && endsWith(github.ref_name, '_dotnet')
+    needs:
+      - test
 
     steps:
       - name: Harden Runner
