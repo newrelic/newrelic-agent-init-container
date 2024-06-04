@@ -17,7 +17,7 @@ name: .NET Agent CI
 on:
   workflow_dispatch: # run test job only
   pull_request: # run check modified files / test jobs
-  release: # run check modified files / test / publish jobs
+  release: # run publish job only
     types:
       - published
       
@@ -37,6 +37,8 @@ jobs:
   check-modified-files:
     name: Check whether any Dotnet-related files were modified, skip the test job if not
     uses: ./.github/workflows/check-modified-files.yml
+    # don't check for modified files on a release
+    if: github.event_name != 'release'
     secrets: inherit
     permissions:
       contents: read
@@ -115,7 +117,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: test
     # only publish on a dotnet release
-    if: (github.event_name == 'release' && endsWith(github.ref, '_dotnet'))
+    if: github.event_name == 'release' && endsWith(github.ref, '_dotnet')
 
     steps:
       - name: Harden Runner
