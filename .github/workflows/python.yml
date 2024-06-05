@@ -155,4 +155,4 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            AGENT_VERSION=${{ env.AGENT_VERSION_LENGTH == 3 && steps.version.outputs.patch || steps.version.outputs.build }}
+            AGENT_VERSION=${{ steps.version.outputs.agent_version }}

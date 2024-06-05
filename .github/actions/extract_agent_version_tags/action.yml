@@ -21,22 +21,26 @@ outputs:
     value: ${{ steps.version.outputs.subbuild }}
   full_enabled:
     description: "Enabled flag for tag created from full version"
-    value: ${{ steps.version.outputs.full }}
+    value: ${{ steps.version.outputs.full_enabled }}
   major_enabled:
     description: "Enabled flag for tag created from major version"
-    value: ${{ steps.version.outputs.major }}
+    value: ${{ steps.version.outputs.major_enabled }}
   minor_enabled:
     description: "Enabled flag for tag created from minor version"
-    value: ${{ steps.version.outputs.minor }}
+    value: ${{ steps.version.outputs.minor_enabled }}
   patch_enabled:
     description: "Enabled flag for tag created from patch version"
-    value: ${{ steps.version.outputs.patch }}
+    value: ${{ steps.version.outputs.patch_enabled }}
   build_enabled:
     description: "Enabled flag for tag created from build version"
-    value: ${{ steps.version.outputs.build }}
+    value: ${{ steps.version.outputs.build_enabled }}
   subbuild_enabled:
     description: "Enabled flag for tag created from subbuild version"
-    value: ${{ steps.version.outputs.subbuild }}
+    value: ${{ steps.version.outputs.subbuild_enabled }}
+  agent_version:
+    description: "Agent version from container version by removing container build number"
+    value: ${{ steps.version.outputs.agent_version }}
+
 runs:
   using: "composite"
   steps:
@@ -44,33 +48,38 @@ runs:
       id: version
       shell: bash
       run: |
-          version_array=()
-          version_names=("full" "major" "minor" "patch" "build" "subbuild")
-          add_outputs_for_version_len() {
-              version_len=$1
-              version_name="${version_names[version_len]}"
-              if [[ version_len -gt ${#version_array[@]} ]]; then
-                  output ${version_name} ''
-                  output ${version_name}.enabled false
-              else
-                  if [[ ${version_len} -ne 0 ]]; then
-                      sliced_version=$(echo ${version_array[@]:0:${version_len}} | sed "s/ /./g")
-                  else
-                      sliced_version=$(echo ${version_array[@]} | sed "s/ /./g")
-                  fi
-                  output ${version_name} ${sliced_version}
-                  output ${version_name}.enabled true
-              fi
-          }
-          
-          output() {
-              echo "$1=$2" | tee -a $GITHUB_OUTPUT
-          }
-  
-          agent_version=${{ github.ref_name }}  # Use release tag
-          agent_version=$(echo $agent_version | sed -e "s/^v//g" -e "s/_[a-zA-Z]*//g")  # Remove v prefix and language suffix
-  
-          IFS="$IFS."
-          for i in $agent_version; do version_array+=($i); done  # Split agent version to array
-          IFS="${IFS:0:3}"
-          for i in {0..5}; do add_outputs_for_version_len $i; done  # Add version outputs for each version length
+        version_array=()
+        version_names=("full" "major" "minor" "patch" "build" "subbuild")
+        add_outputs_for_version_len() {
+            version_len=$1
+            version_name="${version_names[version_len]}"
+            if [[ version_len -gt ${#version_array[@]} ]]; then
+                output ${version_name} ''
+                output ${version_name}.enabled false
+            else
+                if [[ ${version_len} -ne 0 ]]; then
+                    sliced_version=$(echo ${version_array[@]:0:${version_len}} | sed "s/ /./g")
+                else
+                    sliced_version=$(echo ${version_array[@]} | sed "s/ /./g")
+                fi
+                output ${version_name} ${sliced_version}
+                output ${version_name}_enabled true
+            fi
+        }
+
+        output() {
+            echo "$1=$2" | tee -a $GITHUB_OUTPUT
+        }
+
+        # Get container version from release tag by removing v prefix and language suffix
+        release_tag=${{ github.ref_name }}
+        container_version=$(echo ${release_tag} | sed -e "s/^v//g" -e "s/_[a-zA-Z]*//g")
+
+        # Split agent version to array
+        IFS="$IFS."; for i in ${container_version}; do version_array+=($i); done; IFS="${IFS:0:3}"
+
+        # Add version outputs for each version length
+        for i in {0..5}; do add_outputs_for_version_len $i; done
+
+        # Agent version strips the last build number off the end
+        output agent_version $(echo ${version_array[@]:0:$((${#version_array[@]} - 1))} | sed "s/ /./g")
