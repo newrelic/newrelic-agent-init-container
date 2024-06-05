@@ -1,45 +1,42 @@
 name: 'Extract Agent Version Tags'
 description: 'Extract agent version into tags for use with the Docker Metadata action.'
 outputs:
+  agent_version:
+    description: "Agent version from container version by removing container build number"
+    value: ${{ steps.version.outputs.agent_version }}
   full:
-    description: "Full agent version"
+    description: "Full container version"
     value: ${{ steps.version.outputs.full }}
   major:
     description: "Sliced agent version up through major"
     value: ${{ steps.version.outputs.major }}
-  minor:
-    description: "Sliced agent version up through minor"
-    value: ${{ steps.version.outputs.minor }}
-  patch:
-    description: "Sliced agent version up through patch"
-    value: ${{ steps.version.outputs.patch }}
-  build:
-    description: "Sliced agent version up through build"
-    value: ${{ steps.version.outputs.build }}
-  subbuild:
-    description: "Sliced agent version up through subbuild"
-    value: ${{ steps.version.outputs.subbuild }}
-  full_enabled:
-    description: "Enabled flag for tag created from full version"
-    value: ${{ steps.version.outputs.full_enabled }}
   major_enabled:
     description: "Enabled flag for tag created from major version"
     value: ${{ steps.version.outputs.major_enabled }}
+  minor:
+    description: "Sliced agent version up through minor"
+    value: ${{ steps.version.outputs.minor }}
   minor_enabled:
     description: "Enabled flag for tag created from minor version"
     value: ${{ steps.version.outputs.minor_enabled }}
+  patch:
+    description: "Sliced agent version up through patch"
+    value: ${{ steps.version.outputs.patch }}
   patch_enabled:
     description: "Enabled flag for tag created from patch version"
     value: ${{ steps.version.outputs.patch_enabled }}
+  build:
+    description: "Sliced agent version up through build"
+    value: ${{ steps.version.outputs.build }}
   build_enabled:
     description: "Enabled flag for tag created from build version"
     value: ${{ steps.version.outputs.build_enabled }}
+  subbuild:
+    description: "Sliced agent version up through subbuild"
+    value: ${{ steps.version.outputs.subbuild }}
   subbuild_enabled:
     description: "Enabled flag for tag created from subbuild version"
     value: ${{ steps.version.outputs.subbuild_enabled }}
-  agent_version:
-    description: "Agent version from container version by removing container build number"
-    value: ${{ steps.version.outputs.agent_version }}
 
 runs:
   using: "composite"
