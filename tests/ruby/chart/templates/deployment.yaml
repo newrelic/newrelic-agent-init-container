@@ -1,0 +1,46 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-app-ruby
+spec:
+  selector:
+    matchLabels:
+      app: test-app-ruby
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: test-app-ruby
+      annotations:
+        instrumentation.newrelic.com/inject-ruby: "true"
+    spec:
+      containers:
+        - name: test-app-ruby
+          image: e2e/test-app-ruby:e2e
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 4567
+          env:
+          - name: NEW_RELIC_APP_NAME
+            value: k8s-e2e-test-app-ruby
+          # used by the e2e Github action
+          - name: NEW_RELIC_LABELS
+            value: 'testKey:{{ .Values.scenarioTag | default "NOTSET" }}'
+          - name: NEW_RELIC_LOG_LEVEL
+            value: info
+          # set the host to staging if using a staging license key
+          - name: NEW_RELIC_HOST
+            value: staging-collector.newrelic.com
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-app-ruby-service
+spec:
+  type: NodePort
+  ports:
+  - port: 4567
+    targetPort: 4567
+  selector:
+    app: test-app-ruby
