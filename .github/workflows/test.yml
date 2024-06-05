@@ -27,7 +27,6 @@ on:
         required: false
         type: string
 
-
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -60,6 +59,7 @@ jobs:
           helm upgrade --install k8s-agents-operator k8s-agents-operator/k8s-agents-operator \
             --namespace=default \
             --set=licenseKey=${{ secrets.NEW_RELIC_LICENSE_KEY }} \
+            --set=newRelicHost=${{ vars.NEW_RELIC_HOST }} \
             --set=controllerManager.manager.image.tag=${{ inputs.K8S_OPERATOR_IMAGE_TAG }}
           sleep 5
           kubectl wait --for=condition=Ready -n default --all pods
@@ -82,4 +82,3 @@ jobs:
           account_id: ${{ secrets.NEW_RELIC_ACCOUNT_ID }}
           api_key: ${{ secrets.NEW_RELIC_API_KEY }}
           license_key: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
-          app_name: k8s-e2e-test-app-${{ inputs.INITCONTAINER_LANGUAGE }}

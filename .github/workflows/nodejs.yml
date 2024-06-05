@@ -32,22 +32,33 @@ on:
   release:
     types:
       - published
-  workflow_dispatch:
 
 env:
   INITCONTAINER_LANGUAGE: nodejs
   K8S_OPERATOR_IMAGE_TAG: edge
+  NEW_RELIC_LICENSE_KEY: ''
+  NEW_RELIC_ACCOUNT_ID: ''
 
 jobs:
+  check-modified-files:
+    name: Check whether any Node-related files were modified, skip the test job if not
+    uses: ./.github/workflows/check-modified-files.yml
+    secrets: inherit
+    permissions:
+      contents: read
+    with:
+      agent-language: nodejs
+
   call-test:
-    if: github.event_name == 'release' && endsWith(github.ref, '_nodejs') # Skip everything if this isn't Node
     uses: ./.github/workflows/test.yml
+    secrets: inherit
     with:
       RUNTIME_VERSION: ${{ matrix.node-version }}
-      INITCONTAINER_LANGUAGE: ${{ env.INITCONTAINER_LANGUAGE }}
-      K8S_OPERATOR_IMAGE_TAG: ${{ env.K8S_OPERATOR_IMAGE_TAG }}
+      INITCONTAINER_LANGUAGE: nodejs
+      K8S_OPERATOR_IMAGE_TAG: edge
 
   call-publish:
+    if: github.event_name == 'release' && endsWith(github.ref, '_nodejs') # Skip everything if this isn't Node
     runs-on: ubuntu-latest
     needs:
       - call-test
@@ -60,11 +71,6 @@ jobs:
 
     steps:
       - uses: actions/setup-node@v4
-        with:
-          INITCONTAINER_LANGUAGE: ${{ env.INITCONTAINER_LANGUAGE }}
-          K8S_OPERATOR_IMAGE_TAG: ${{ env.K8S_OPERATOR_IMAGE_TAG }}
-          RUNTIME_VERSION: ${{ matrix.node-version }}
-
       - name: Get agent version
         run: |
           if [[ ${{ matrix.agent-version }} == 'latest' ]]; then
@@ -92,3 +98,5 @@ jobs:
           NEW_RELIC_AGENT_VERSION: ${{ env.NEW_RELIC_AGENT_VERSION }}
           AGENT_VERSION_TAG: ${{steps.version.output.agent_version}}
           RUNTIME_VERSION: ${{ matrix.node-version }}
+          DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
+
