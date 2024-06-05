@@ -131,14 +131,13 @@ jobs:
         with:
           images: newrelic/newrelic-${{ env.INITCONTAINER_LANGUAGE }}-init
           tags: |
-            type=raw,value=${{ steps.version.outputs.agent_version }}
-            type=raw,value=${{ steps.version.outputs.full }},enabled=${{ steps.version.outputs.full_enabled }}
-            type=raw,value=${{ steps.version.outputs.major }},enabled=${{ steps.version.outputs.major_enabled }}
-            type=raw,value=${{ steps.version.outputs.minor }},enabled=${{ steps.version.outputs.minor_enabled }}
-            type=raw,value=${{ steps.version.outputs.patch }},enabled=${{ steps.version.outputs.patch_enabled }}
-            type=raw,value=${{ steps.version.outputs.build }},enabled=${{ steps.version.outputs.build_enabled }}
-            type=raw,value=${{ steps.version.outputs.subbuild }},enabled=${{ steps.version.outputs.subbuild_enabled }}
-            type=raw,value=latest
+            type=raw,value=${{ steps.version.outputs.full }},enabled=${{ steps.version.outputs.full_enabled }},priority=1006
+            type=raw,value=${{ steps.version.outputs.major }},enabled=${{ steps.version.outputs.major_enabled }},priority=1005
+            type=raw,value=${{ steps.version.outputs.minor }},enabled=${{ steps.version.outputs.minor_enabled }},priority=1002
+            type=raw,value=${{ steps.version.outputs.patch }},enabled=${{ steps.version.outputs.patch_enabled }},priority=1003
+            type=raw,value=${{ steps.version.outputs.build }},enabled=${{ steps.version.outputs.build_enabled }},priority=1002
+            type=raw,value=${{ steps.version.outputs.subbuild }},enabled=${{ steps.version.outputs.subbuild_enabled }},priority=1001
+            type=raw,value=latest,priority=1000
 
       - name: Login to Docker Hub Container Registry
         uses: docker/login-action@e92390c5fb421da1463c202d546fed0ec5c39f20 # 3.1.0
