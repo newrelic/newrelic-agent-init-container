@@ -33,6 +33,10 @@ on:
       - published
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 env:
   INITCONTAINER_LANGUAGE: ruby
   K8S_OPERATOR_IMAGE_TAG: edge
@@ -48,10 +52,11 @@ jobs:
       agent-language: ruby
       
   test:
+    name: Run Ruby init container tests
     runs-on: ubuntu-latest
     needs: check-modified-files
-    # run only if Ruby-related files were modified
-    if: needs.check-modified-files.outputs.files-changed == 'true'
+    # run only if files were modified or the workflow was manually invoked
+    if: needs.check-modified-files.outputs.files-changed == 'true' || github.event_name == 'workflow_dispatch'
 
     steps:
       - name: Checkout code
