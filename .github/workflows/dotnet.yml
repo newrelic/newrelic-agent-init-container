@@ -12,7 +12,7 @@ on:
         required: true
         default: false
       agent_version:
-        description: Agent version to publish (in SemVer format xx.xx.xx).
+        description: Agent version to publish
         type: string
         required: true
         default: 'xx.xx.xx'
