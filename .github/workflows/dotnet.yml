@@ -165,7 +165,7 @@ jobs:
           images: newrelic/newrelic-dotnet-init
           tags: |
             type=raw,value=${{ steps.version.outputs.agent_version }}
-            type=raw,value=latest
+            type=raw,value=latest,enable=${{ inputs.agent_version == '' }}
 
       - name: Login to Docker Hub Container Registry
         uses: docker/login-action@e92390c5fb421da1463c202d546fed0ec5c39f20 # 3.1.0
