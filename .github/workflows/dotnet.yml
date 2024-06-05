@@ -12,9 +12,10 @@ on:
         required: true
         default: false
       agent_version:
-        description: Agent version to publish (in SemVer format xx.xx.xx). Leave blank for latest version.
+        description: Agent version to publish (in SemVer format xx.xx.xx).
         type: string
-        required: false
+        required: true
+        default: 'xx.xx.xx'
   pull_request: # run check modified files / test jobs
     paths:
       - 'src/dotnet/**'
@@ -139,7 +140,7 @@ jobs:
       - name: Extract Agent Version from release tag or workflow input
         id: version
         run: |
-          if [[ ${{ github.event_name == 'workflow_dispatch' }} && ${{ inputs.agent_version != '' }} ]]; then
+          if [[ ${{ github.event_name == 'workflow_dispatch' }} ]]; then
             echo "agent_version=${{ inputs.agent_version }}" | tee -a "$GITHUB_OUTPUT"
           else
             agent_version=${{ github.ref_name }}  # Use tag name
