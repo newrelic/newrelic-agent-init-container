@@ -16,6 +16,10 @@ on:
         type: string
         required: true
         default: 'xx.xx.xx'
+      set_latest_tag:
+        description: Set the "latest" image tag?
+        type: boolean
+        default: false
   pull_request: # run check modified files / test jobs
     paths:
       - 'src/dotnet/**'
@@ -166,7 +170,7 @@ jobs:
           images: newrelic/newrelic-dotnet-init
           tags: |
             type=raw,value=${{ steps.version.outputs.agent_version }}
-            type=raw,value=latest,enable=${{ github.event_name == 'release' }}
+            type=raw,value=latest,enable=${{ github.event_name == 'release' || inputs.set_latest_tag }}
 
       - name: Login to Docker Hub Container Registry
         uses: docker/login-action@e92390c5fb421da1463c202d546fed0ec5c39f20 # 3.1.0
