@@ -139,7 +139,7 @@ jobs:
       - name: Extract Agent Version from release tag or workflow input
         id: version
         run: |
-          if [[ ${{ github.event_name == 'workflow_dispatch' }} && "${{ inputs.agent_version }}"]]; then
+          if [[ ${{ github.event_name == 'workflow_dispatch' }} && ${{ inputs.agent_version != '' }} ]]; then
             echo "agent_version=${{ inputs.agent_version }}" | tee -a "$GITHUB_OUTPUT"
           else
             agent_version=${{ github.ref_name }}  # Use tag name
