@@ -55,7 +55,7 @@ runs:
             version_name="${version_names[version_len]}"
             if [[ version_len -gt ${#version_array[@]} ]]; then
                 output ${version_name} ''
-                output ${version_name}.enabled false
+                output ${version_name}_enabled false
             else
                 if [[ ${version_len} -ne 0 ]]; then
                     sliced_version=$(echo ${version_array[@]:0:${version_len}} | sed "s/ /./g")
