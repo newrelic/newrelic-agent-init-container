@@ -144,7 +144,7 @@ jobs:
         uses: docker/login-action@e92390c5fb421da1463c202d546fed0ec5c39f20 # 3.1.0
         with:
           # username: ${{ github.repository_owner }}
-          username: ${{ secret.RUBY_AGENT_TEST_USERNAME }}
+          username: ${{ secrets.RUBY_AGENT_TEST_USERNAME }}
           # password: ${{ secrets.DOCKER_TOKEN }}
           password: ${{ secrets.RUBY_AGENT_TEST_DOCKER_TOKEN }}
 
