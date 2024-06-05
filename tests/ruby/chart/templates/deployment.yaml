@@ -32,9 +32,6 @@ spec:
           # set the host to staging if using a staging license key
           # - name: NEW_RELIC_HOST
           #   value: staging-collector.newrelic.com
-          # - name: NEW_RELIC_LOG_FILE_PATH
-          #   value: STDOUT
-
 ---
 apiVersion: v1
 kind: Service

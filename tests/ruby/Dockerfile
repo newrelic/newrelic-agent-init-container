@@ -2,8 +2,6 @@ FROM ruby:latest
 
 WORKDIR /app
 
-RUN apt-get update -qq && apt-get install -y nodejs postgresql-client
-
 COPY Gemfile ./
 
 RUN bundle install
