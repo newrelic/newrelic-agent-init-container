@@ -4,11 +4,13 @@
 #  - Grant the necessary access to the files in the `/instrumentation` directory.
 FROM alpine:latest as build
 RUN apk update && apk add ca-certificates
-ARG version
-ARG architecture
-ARG php
+ARG VERSION
+ARG LIBC
 WORKDIR /instrumentation
-RUN wget -c "https://download.newrelic.com/php_agent/release/newrelic-${php}-${version}-${architecture}.tar.gz" -O - | tar -xz --strip-components 1
+COPY php-agent-download.sh .
+RUN chmod +x php-agent-download.sh
+RUN ./php-agent-download.sh $LIBC $VERSION
+RUN rm php-agent-download.sh
 
 FROM busybox
 COPY --from=build /instrumentation /instrumentation
