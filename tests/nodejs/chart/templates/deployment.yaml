@@ -32,9 +32,9 @@ kind: Service
 metadata:
   name: test-app-nodejs-service
 spec:
-  type: NodePort
+  type: LoadBalancer
   ports:
-  - name: server
+  - name: external
     port: 8000
     targetPort: 8000
   selector:
