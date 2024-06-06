@@ -23,6 +23,12 @@ on:
       K8S_OPERATOR_IMAGE_TAG:
         required: true
         type: string
+      NEW_RELIC_ACCOUNT_ID:
+        required: true
+        type: string
+      NEW_RELIC_LICENSE_KEY:
+        required: true
+        type: string
       RUNTIME_VERSION:
         required: false
         type: string
@@ -59,7 +65,7 @@ jobs:
           helm repo add k8s-agents-operator https://newrelic.github.io/k8s-agents-operator
           helm upgrade --install k8s-agents-operator k8s-agents-operator/k8s-agents-operator \
             --namespace=default \
-            --set=licenseKey=${{ secrets.NEW_RELIC_LICENSE_KEY }} \
+            --set=licenseKey=${{ inputs.NEW_RELIC_LICENSE_KEY }} \
             --set=newRelicHost=${{ vars.NEW_RELIC_HOST }} \
             --set=controllerManager.manager.image.tag=${{ inputs.K8S_OPERATOR_IMAGE_TAG }}
           sleep 5
@@ -80,6 +86,6 @@ jobs:
           retry_attempts: 5
           agent_enabled: false
           spec_path: tests/${{ inputs.INITCONTAINER_LANGUAGE }}/test-specs.yml
-          account_id: ${{ secrets.NEW_RELIC_ACCOUNT_ID }}
-          api_key: ${{ secrets.NEW_RELIC_API_KEY }}
+          account_id: ${{ inputs.NEW_RELIC_ACCOUNT_ID }}
+          api_key: ${{ inputs.NEW_RELIC_API_KEY }}
           license_key: ${{ secrets.NEW_RELIC_LICENSE_KEY }}

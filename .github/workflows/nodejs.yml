@@ -46,6 +46,8 @@ jobs:
       RUNTIME_VERSION: ${{ matrix.node-version }}
       INITCONTAINER_LANGUAGE: nodejs
       K8S_OPERATOR_IMAGE_TAG: edge
+      NEW_RELIC_LICENSE_KEY: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
+      NEW_RELIC_ACCOUNT_ID: ${{ secrets.NEW_RELIC_ACCOUNT_ID }}
 
   call-publish:
     if: github.event_name == 'release' && endsWith(github.ref, '_nodejs') # Skip everything if this isn't Node
