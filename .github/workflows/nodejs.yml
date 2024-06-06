@@ -38,15 +38,6 @@ env:
   K8S_OPERATOR_IMAGE_TAG: edge
 
 jobs:
-  check-license-key:
-    name: Check secret is accessible
-    runs-on: ubuntu-latest
-    steps:
-      - name: Test
-        run: |
-          NEW_RELIC_LICENSE_KEY="${{ secrets.NEW_RELIC_LICENSE_KEY }}"
-          echo ${#NEW_RELIC_LICENSE_KEY}
-
   check-modified-files:
     name: Check whether any Node-related files were modified, skip the test job if not
     uses: ./.github/workflows/check-modified-files.yml
@@ -103,6 +94,6 @@ jobs:
           INITCONTAINER_LANGUAGE: ${{ env.INITCONTAINER_LANGUAGE }}
           K8S_OPERATOR_IMAGE_TAG: ${{ env.K8S_OPERATOR_IMAGE_TAG }}
           NEW_RELIC_AGENT_VERSION: ${{ env.NEW_RELIC_AGENT_VERSION }}
-          AGENT_VERSION_TAG: ${{steps.version.output.agent_version}}
+          AGENT_VERSION_TAG: ${{ steps.version.output.agent_version }}
           RUNTIME_VERSION: ${{ matrix.node-version }}
           DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
