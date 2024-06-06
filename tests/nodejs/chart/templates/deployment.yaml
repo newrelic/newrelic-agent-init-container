@@ -34,11 +34,8 @@ metadata:
 spec:
   type: NodePort
   ports:
-  - name: external
+  - name: server
     port: 8000
     targetPort: 8000
-  - name: server
-    port: 8001
-    targetPort: 8001
   selector:
     app: test-app-nodejs

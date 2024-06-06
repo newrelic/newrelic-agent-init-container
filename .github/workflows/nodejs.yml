@@ -36,25 +36,29 @@ on:
 env:
   INITCONTAINER_LANGUAGE: nodejs
   K8S_OPERATOR_IMAGE_TAG: edge
-  NEW_RELIC_LICENSE_KEY: ''
-  NEW_RELIC_ACCOUNT_ID: ''
 
 jobs:
-#  check-modified-files:
-#    name: Check whether any Node-related files were modified, skip the test job if not
-#    uses: ./.github/workflows/check-modified-files.yml
-#    secrets: inherit
-#    permissions:
-#      contents: read
-#    with:
-#      agent-language: nodejs
+  check-license-key:
+    name: Check secret is accessible
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test
+        run: |
+          NEW_RELIC_LICENSE_KEY="${{ secrets.NEW_RELIC_LICENSE_KEY }}"
+          echo ${#NEW_RELIC_LICENSE_KEY}
+
+  check-modified-files:
+    name: Check whether any Node-related files were modified, skip the test job if not
+    uses: ./.github/workflows/check-modified-files.yml
+    secrets: inherit
+    permissions:
+      contents: read
+    with:
+      agent-language: nodejs
 
   call-test:
     uses: ./.github/workflows/test.yml
-    secrets:
-      NEW_RELIC_LICENSE_KEY: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
-      NEW_RELIC_API_KEY: ${{ secrets.NEW_RELIC_API_KEY }}
-      NEW_RELIC_ACCOUNT_ID: ${{ secrets.NEW_RELIC_ACCOUNT_ID }}
+    secrets: inherit
     with:
       RUNTIME_VERSION: ${{ matrix.node-version }}
       INITCONTAINER_LANGUAGE: nodejs
@@ -102,4 +106,3 @@ jobs:
           AGENT_VERSION_TAG: ${{steps.version.output.agent_version}}
           RUNTIME_VERSION: ${{ matrix.node-version }}
           DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
-

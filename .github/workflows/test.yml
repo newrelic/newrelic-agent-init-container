@@ -26,15 +26,17 @@ on:
       RUNTIME_VERSION:
         required: false
         type: string
-    secrets:
-      NEW_RELIC_LICENSE_KEY:
-        required: true
-      NEW_RELIC_API_KEY:
-        required: true
-      NEW_RELIC_ACCOUNT_ID:
-        required: true
 
 jobs:
+  check-license-key:
+    name: Check secret is accessible
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test
+        run: |
+          NEW_RELIC_LICENSE_KEY="${{ secrets.NEW_RELIC_LICENSE_KEY }}"
+          echo ${#NEW_RELIC_LICENSE_KEY}
+
   test:
     runs-on: ubuntu-latest
 
