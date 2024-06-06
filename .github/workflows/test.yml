@@ -26,7 +26,13 @@ on:
       RUNTIME_VERSION:
         required: false
         type: string
-
+    secrets:
+      NEW_RELIC_ACCOUNT_ID:
+        required: true
+      NEW_RELIC_API_KEY:
+        required: true
+      NEW_RELIC_LICENSE_KEY:
+        required: true
 
 jobs:
   test:
