@@ -49,24 +49,13 @@ jobs:
     with:
       agent-language: nodejs
 
-  prepare-env:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/setup-node@v4
-        name: set environment vars
-        run: |
-          echo "NEW_RELIC_LICENSE_KEY=${{ secrets.NEW_RELIC_LICENSE_KEY }}" >> "$GITHUB_OUTPUT"
-          echo "NEW_RELIC_ACCOUNT_ID=${{ secrets.NEW_RELIC_ACCOUNT_ID }}" >> "$GITHUB_OUTPUT"
-
   call-test:
     uses: ./.github/workflows/test.yml
-    needs: prepare-env
+    secrets: inherit
     with:
       RUNTIME_VERSION: ${{ matrix.node-version }}
       INITCONTAINER_LANGUAGE: nodejs
       K8S_OPERATOR_IMAGE_TAG: edge
-      NEW_RELIC_LICENSE_KEY: ${{ env.NEW_RELIC_LICENSE_KEY }}
-      NEW_RELIC_ACCOUNT_ID: ${{ env.NEW_RELIC_ACCOUNT_ID }}
 
   call-publish:
     if: github.event_name == 'release' && endsWith(github.ref, '_nodejs') # Skip everything if this isn't Node
