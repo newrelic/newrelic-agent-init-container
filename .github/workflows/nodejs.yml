@@ -40,18 +40,21 @@ env:
   NEW_RELIC_ACCOUNT_ID: ''
 
 jobs:
-  check-modified-files:
-    name: Check whether any Node-related files were modified, skip the test job if not
-    uses: ./.github/workflows/check-modified-files.yml
-    secrets: inherit
-    permissions:
-      contents: read
-    with:
-      agent-language: nodejs
+#  check-modified-files:
+#    name: Check whether any Node-related files were modified, skip the test job if not
+#    uses: ./.github/workflows/check-modified-files.yml
+#    secrets: inherit
+#    permissions:
+#      contents: read
+#    with:
+#      agent-language: nodejs
 
   call-test:
     uses: ./.github/workflows/test.yml
-    secrets: inherit
+    secrets:
+      NEW_RELIC_LICENSE_KEY: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
+      NEW_RELIC_API_KEY: ${{ secrets.NEW_RELIC_API_KEY }}
+      NEW_RELIC_ACCOUNT_ID: ${{ secrets.NEW_RELIC_ACCOUNT_ID }}
     with:
       RUNTIME_VERSION: ${{ matrix.node-version }}
       INITCONTAINER_LANGUAGE: nodejs
