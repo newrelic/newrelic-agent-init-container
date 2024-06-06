@@ -6,6 +6,8 @@
 FROM ruby:latest AS build
 WORKDIR /operator-build
 
+ARG AGENT_VERSION
+
 # Install gems from Gemfile into the `workspace` directory
 ADD Gemfile .
 RUN BUNDLE_PATH=workspace bundle install
