@@ -81,5 +81,5 @@ jobs:
           agent_enabled: false
           spec_path: tests/${{ inputs.INITCONTAINER_LANGUAGE }}/test-specs.yml
           account_id: ${{ secrets.NEW_RELIC_ACCOUNT_ID }}
-          api_key: ${{ inputs.NEW_RELIC_API_KEY }}
+          api_key: ${{ secrets.NEW_RELIC_API_KEY }}
           license_key: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
