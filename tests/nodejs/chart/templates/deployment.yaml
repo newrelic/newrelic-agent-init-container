@@ -1,0 +1,41 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-app-nodejs
+spec:
+  selector:
+    matchLabels:
+      app: test-app-nodejs
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: test-app-nodejs
+      annotations:
+        instrumentation.newrelic.com/inject-nodejs: "true"
+    spec:
+      containers:
+        - name: test-app-nodejs
+          image: e2e/test-app-nodejs:e2e
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8000
+          env:
+          - name: NEW_RELIC_APP_NAME
+            value: k8s-e2e-test-app-nodejs
+          - name: NEW_RELIC_LABELS
+            value: "testKey:{{ .Values.scenarioTag | default "NOTSET" }}"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-app-nodejs-service
+spec:
+  type: LoadBalancer
+  ports:
+  - name: external
+    port: 8000
+    targetPort: 8000
+  selector:
+    app: test-app-nodejs

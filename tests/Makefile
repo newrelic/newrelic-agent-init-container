@@ -10,7 +10,11 @@ INITCONTAINER_LANGUAGE:=${INITCONTAINER_LANGUAGE}
 LOCAL_OPERATOR_REPO_PATH:=${REPO_ROOT}/../k8s-agents-operator
 
 .PHONY: default
-default: test
+default: all
+
+# Install all dependencies and run tests
+.PHONY: all
+all: minikube cert-manager operator test
 
 # Start minikube
 .PHONY: minikube
@@ -22,7 +26,8 @@ minikube:
 cert-manager:
 	helm repo add jetstack https://charts.jetstack.io --force-update
 	helm upgrade --install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version v1.14.5 --set installCRDs=true
-	kubectl wait --for=condition=Ready -n cert-manager --all pods
+	sleep 1
+	kubectl wait --for=condition=Ready -n cert-manager --all pods --timeout=60s
 
 # Install official k8s-agents-operator repo
 .PHONY: operator
@@ -54,12 +59,12 @@ operator-local:
 # Build local initcontainer image
 .PHONY: build-initcontainer
 build-initcontainer: check-language-arg
-	minikube image build -t e2e/newrelic-${INITCONTAINER_LANGUAGE}-init:e2e src/${INITCONTAINER_LANGUAGE}/
+	minikube image build -t e2e/newrelic-${INITCONTAINER_LANGUAGE}-init:e2e ${REPO_ROOT}/src/${INITCONTAINER_LANGUAGE}/
 
 # Build local test app image
 .PHONY: build-testapp
 build-testapp: check-language-arg
-	minikube image build -t e2e/test-app-${INITCONTAINER_LANGUAGE}:e2e tests/${INITCONTAINER_LANGUAGE}/
+	minikube image build -t e2e/test-app-${INITCONTAINER_LANGUAGE}:e2e ${REPO_ROOT}/tests/${INITCONTAINER_LANGUAGE}/
 
 # Deploy and open test app in browser
 .PHONY: test
