@@ -28,15 +28,6 @@ on:
         type: string
 
 jobs:
-  check-license-key:
-    name: Check secret is accessible
-    runs-on: ubuntu-latest
-    steps:
-      - name: Test
-        run: |
-          NEW_RELIC_LICENSE_KEY="${{ secrets.NEW_RELIC_LICENSE_KEY }}"
-          echo ${#NEW_RELIC_LICENSE_KEY}
-
   test:
     runs-on: ubuntu-latest
 
