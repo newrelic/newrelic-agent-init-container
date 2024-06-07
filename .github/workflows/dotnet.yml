@@ -1,22 +1,38 @@
-# Copyright 2010 New Relic, Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# Copyright New Relic, Inc.
+# SPDX-License-Identifier: Apache-2.0
 ---
 name: .NET Agent CI
 
 on:
-  workflow_dispatch: # run test job only
+  workflow_dispatch: # run test job always, optionally publish a specific version
+    inputs:
+      publish_agent:
+        description: Publish the agent?
+        type: boolean
+        required: true
+        default: false
+      agent_version:
+        description: Agent version to publish
+        type: string
+        required: true
+        default: 'xx.xx.xx'
+      set_latest_tag:
+        description: Set the "latest" image tag?
+        type: boolean
+        default: false
   pull_request: # run check modified files / test jobs
+    paths:
+      - 'src/dotnet/**'
+      - '.github/workflows/dotnet.yml'
+  push: # run check modified files / test jobs
+    branches:
+      - main
+    paths:
+      - 'dotnet/**'
+      - '.github/workflows/dotnet.yml'
+    # Do not run when a tag is created.
+    tags-ignore:
+      - "**"  
   release: # run check modified files / test / publish jobs
     types:
       - published
@@ -35,7 +51,7 @@ permissions:
 
 jobs:
   check-modified-files:
-    name: Check whether any Dotnet-related files were modified, skip the test job if not
+    name: Check whether any Dotnet-related files were modified
     uses: ./.github/workflows/check-modified-files.yml
     secrets: inherit
     permissions:
@@ -44,77 +60,20 @@ jobs:
       agent-language: dotnet
 
   test:
-    name: Run Dotnet init container tests
-    runs-on: ubuntu-latest
+    uses: ./.github/workflows/test.yml
     needs: check-modified-files
     # run only if files were modified or the workflow was manually invoked or on a publish
     if: needs.check-modified-files.outputs.files-changed == 'true' || github.event_name == 'workflow_dispatch' || (github.event_name == 'release' && endsWith(github.ref_name, '_dotnet'))
-
-    steps:      
-      # For some reason, Harden Runner causes setup-minikube to not work correctly
-      # - name: Harden Runner
-      #   uses: step-security/harden-runner@a4aa98b93cab29d9b1101a6143fb8bce00e2eac4 # v2.7.1
-      #   with:
-      #     #disable-sudo: true
-      #     egress-policy: audit
-
-      - name: Checkout code
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # 4.1.1
-        with:
-          persist-credentials: false
-          fetch-depth: 0
-
-      - name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@d70bba72b1f3fd22344832f00baa16ece964efeb # 3.3.0
-
-      - name: Start minikube
-        uses: medyagh/setup-minikube@317d92317e473a10540357f1f4b2878b80ee7b95 # 0.0.16
-      
-      - name: Deploy cert-manager to minikube
-        run: |
-          helm repo add jetstack https://charts.jetstack.io --force-update
-          helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version v1.14.5 --set installCRDs=true
-          echo "waiting for cert-manager pods to be ready..."
-          sleep 5
-          kubectl wait --for=condition=Ready -n cert-manager --all pods --timeout=60s
-
-      - name: Deploy New Relic k8s-agents-operator to minikube
-        run: |
-          helm repo add k8s-agents-operator https://newrelic.github.io/k8s-agents-operator
-          helm upgrade --install k8s-agents-operator k8s-agents-operator/k8s-agents-operator \
-            --namespace=default \
-            --set=licenseKey=${{ secrets.NEW_RELIC_LICENSE_KEY }} \
-            --set=controllerManager.manager.image.tag=${{ env.K8S_OPERATOR_IMAGE_TAG }}
-          sleep 5
-          kubectl wait --for=condition=Ready -n default --all pods --timeout=60s
-
-      - name: Build init container for e2e test
-        run: |
-          minikube image build -t e2e/newrelic-dotnet-init:e2e src/dotnet/ \
-            --build-opt=build-arg=TARGETARCH=${{ env.DOTNET_AGENT_ARCHITECTURE }}
-
-      - name: Build test app container
-        run: |
-          minikube image build -t e2e/test-app-dotnet:e2e tests/dotnet/
-
-      - name: Run e2e-test
-        uses: newrelic/newrelic-integration-e2e-action@a97ced80a4841c8c6261d1f9dca6706b1d89acb1  # 1.11.0
-        with:
-          retry_seconds: 60
-          retry_attempts: 5
-          agent_enabled: false
-          spec_path: tests/dotnet/test-specs.yml
-          account_id: ${{ secrets.NEW_RELIC_ACCOUNT_ID }}
-          api_key: ${{ secrets.NEW_RELIC_API_KEY }}
-          license_key: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
-          # set the region to Staging if using a staging license key. Also set NEW_RELIC_HOST in tests/chart/templates/deployment.yaml
-          #region: Staging 
+    secrets: inherit
+    with:
+      INITCONTAINER_LANGUAGE: dotnet
+      K8S_OPERATOR_IMAGE_TAG: edge
+      TEST_APP_BUILD_ARGS: --build-opt=build-arg=TARGETARCH=amd64
 
   publish:
     runs-on: ubuntu-latest
-    # only publish on a dotnet release
-    if: github.event_name == 'release' && endsWith(github.ref_name, '_dotnet')
+    # publish on a dotnet release or when selected on a manual invocation
+    if: (github.event_name == 'release' && endsWith(github.ref_name, '_dotnet')) || (github.event_name == 'workflow_dispatch' && inputs.publish_agent)
     needs:
       - test
 
@@ -125,13 +84,17 @@ jobs:
           disable-sudo: true
           egress-policy: audit
 
-      - name: Extract Agent Version from release tag
+      - name: Extract Agent Version from release tag or workflow input
         id: version
         run: |
-          agent_version=${{ github.ref_name }}  # Use tag name
-          agent_version=${agent_version##v}  # Remove v prefix
-          agent_version=${agent_version%%_dotnet}  # Remove language suffix
-          echo "agent_version=${agent_version}" | tee -a "$GITHUB_OUTPUT"
+          if [[ ${{ github.event_name == 'workflow_dispatch' }} ]]; then
+            echo "agent_version=${{ inputs.agent_version }}" | tee -a "$GITHUB_OUTPUT"
+          else
+            agent_version=${{ github.ref_name }}  # Use tag name
+            agent_version=${agent_version##v}  # Remove v prefix
+            agent_version=${agent_version%%_dotnet}  # Remove language suffix
+            echo "agent_version=${agent_version}" | tee -a "$GITHUB_OUTPUT"
+          fi
 
       - name: Checkout code
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # 4.1.1
@@ -150,7 +113,7 @@ jobs:
           images: newrelic/newrelic-dotnet-init
           tags: |
             type=raw,value=${{ steps.version.outputs.agent_version }}
-            type=raw,value=latest
+            type=raw,value=latest,enable=${{ github.event_name == 'release' || inputs.set_latest_tag }}
 
       - name: Login to Docker Hub Container Registry
         uses: docker/login-action@e92390c5fb421da1463c202d546fed0ec5c39f20 # 3.1.0
