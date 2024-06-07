@@ -1,0 +1,17 @@
+---
+apiVersion: newrelic.com/v1alpha1
+kind: Instrumentation
+metadata:
+  labels:
+    app.kubernetes.io/name: instrumentation
+    app.kubernetes.io/created-by: newrelic-agent-operator
+  name: newrelic-instrumentation
+spec:
+  nodejs:
+    image: e2e/newrelic-nodejs-init:e2e
+    # Configure agent for testing using environment variables
+    env:
+      - name: NEW_RELIC_NO_CONFIG_FILE
+        value: "true"
+      - name: NEW_RELIC_LOG_LEVEL
+        value: "debug"
