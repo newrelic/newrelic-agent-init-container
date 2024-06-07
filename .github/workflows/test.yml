@@ -82,7 +82,7 @@ jobs:
 
       - name: Build test app container
         run: |
-          minikube image build -t e2e/test-app-${{ inputs.INITCONTAINER_LANGUAGE }}:e2e tests/${{ inputs.INITCONTAINER_LANGUAGE }}/
+          minikube image build -t e2e/test-app-${{ inputs.INITCONTAINER_LANGUAGE }}:e2e tests/${{ inputs.INITCONTAINER_LANGUAGE }}/ \
             ${{ inputs.TEST_APP_BUILD_ARGS}}
 
       - name: Run e2e-test
