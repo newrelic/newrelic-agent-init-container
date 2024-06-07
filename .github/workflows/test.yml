@@ -41,6 +41,7 @@ jobs:
           echo ${#NEW_RELIC_LICENSE_KEY}
 
   test:
+    name: Run E2E tests for ${{ inputs.INITCONTAINER_LANGUAGE }}
     runs-on: ubuntu-latest
 
     steps:
