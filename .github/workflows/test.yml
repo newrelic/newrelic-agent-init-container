@@ -26,6 +26,9 @@ on:
       RUNTIME_VERSION:
         required: false
         type: string
+      TEST_APP_BUILD_ARGS:
+        required: false
+        type: string
 
 jobs:
   check-license-key:
@@ -80,6 +83,7 @@ jobs:
       - name: Build test app container
         run: |
           minikube image build -t e2e/test-app-${{ inputs.INITCONTAINER_LANGUAGE }}:e2e tests/${{ inputs.INITCONTAINER_LANGUAGE }}/
+            ${{ inputs.TEST_APP_BUILD_ARGS}}
 
       - name: Run e2e-test
         uses: newrelic/newrelic-integration-e2e-action@a97ced80a4841c8c6261d1f9dca6706b1d89acb1  # 1.11.0
