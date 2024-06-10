@@ -2,9 +2,8 @@
 
 require 'sinatra'
 
-set :bind, '0.0.0.0'
-set :port, 9292
-
 get '/' do
-  'hello, world!'
+  status = NewRelic::Agent::Tracer.current_transaction ? 'active' : 'inactive'
+
+  "Hello, World! New Relic is #{status}"
 end
