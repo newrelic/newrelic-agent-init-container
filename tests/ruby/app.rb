@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'sinatra'
-require 'newrelic_rpm'
 
 set :bind, '0.0.0.0'
 set :port, 4567
