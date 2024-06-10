@@ -1,13 +1,9 @@
 # frozen_string_literal: true
 
 require 'sinatra'
-require 'newrelic_rpm'
-
-set :bind, '0.0.0.0'
-set :port, 4567
 
 get '/' do
-  return 'no new relic txn' unless NewRelic::Agent::Tracer.current_transaction
+  status = NewRelic::Agent::Tracer.current_transaction ? 'active' : 'inactive'
 
-  'hello, world!'
+  "Hello, World! New Relic is #{status}"
 end

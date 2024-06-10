@@ -6,6 +6,8 @@
 FROM ruby:latest AS build
 WORKDIR /operator-build
 
+ARG AGENT_VERSION
+
 # Install gems from Gemfile into the `workspace` directory
 ADD Gemfile .
 RUN BUNDLE_PATH=workspace bundle install
@@ -21,7 +23,7 @@ WORKDIR /operator-build
 # Copy the result into a new directory called `/instrumentation`.
 RUN sh -c "find 'workspace/ruby/' -type d -name newrelic_rpm\\* -exec cp -r '{}' /instrumentation \\;"
 
-# Adjust permissions of `instrumentation` director to readable by everyone
+# Adjust permissions of `instrumentation` directory to readable by everyone
 RUN chmod -R go+r /instrumentation
 
 # Clean up build artifacts
