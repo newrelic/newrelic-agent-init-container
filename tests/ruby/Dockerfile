@@ -8,7 +8,7 @@ RUN bundle install
 
 COPY . .
 
-EXPOSE 4567
+EXPOSE 9292
 
 #Ensure executable permissions
 RUN chmod +x start.sh

@@ -20,7 +20,7 @@ spec:
           image: e2e/test-app-ruby:e2e
           imagePullPolicy: Never
           ports:
-            - containerPort: 4567
+            - containerPort: 9292
           env:
           - name: NEW_RELIC_APP_NAME
             value: k8s-e2e-test-app-ruby
@@ -40,7 +40,7 @@ metadata:
 spec:
   type: NodePort
   ports:
-  - port: 4567
-    targetPort: 4567
+  - port: 9292
+    targetPort: 9292
   selector:
     app: test-app-ruby

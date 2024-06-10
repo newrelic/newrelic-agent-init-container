@@ -5,6 +5,6 @@ bundle exec rackup & sleep 5
 
 # Hit endponint
 while true; do
-  curl http://0.0.0.0:4567
+  curl http://0.0.0.0:9292
   sleep 3
 done
