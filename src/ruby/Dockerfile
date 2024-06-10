@@ -23,7 +23,7 @@ WORKDIR /operator-build
 # Copy the result into a new directory called `/instrumentation`.
 RUN sh -c "find 'workspace/ruby/' -type d -name newrelic_rpm\\* -exec cp -r '{}' /instrumentation \\;"
 
-# Adjust permissions of `instrumentation` director to readable by everyone
+# Adjust permissions of `instrumentation` directory to readable by everyone
 RUN chmod -R go+r /instrumentation
 
 # Clean up build artifacts
