@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Start ruby app and provide time to boot Puma
-ruby app.rb & sleep 5
+bundle exec rackup & sleep 5
 
 # Hit endponint
 while true; do

@@ -2,4 +2,4 @@
 
 source 'https://rubygems.org'
 
-gem 'newrelic_rpm'
+gem *['newrelic_rpm', ENV.fetch('AGENT_VERSION', nil)].compact
