@@ -1,3 +1,6 @@
+# Copyright New Relic, Inc.
+# SPDX-License-Identifier: Apache-2.0
+---
 name: 'Extract Agent Version Tags'
 description: 'Extract agent version into tags for use with the Docker Metadata action.'
 
