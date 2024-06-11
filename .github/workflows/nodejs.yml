@@ -43,7 +43,7 @@ env:
   INITCONTAINER_LANGUAGE: nodejs
 
 jobs:
-  call-test:
+  test:
     if: github.event_name != 'release' || (github.event_name == 'release' && endsWith(github.ref, '_nodejs')) # Skip everything if this isn't Node
     secrets: inherit
     uses: ./.github/workflows/test.yml
@@ -56,9 +56,9 @@ jobs:
       INITCONTAINER_BUILD_ARGS: RUNTIME_VERSION=${{ matrix.node-version }}
       TEST_APP_BUILD_ARGS: RUNTIME_VERSION=${{ matrix.node-version }}
 
-  call-publish:
+  publish:
     if: github.event_name == 'release' && endsWith(github.ref, '_nodejs') # Skip everything if this isn't Node
-    needs: call-test
+    needs: test
     uses: ./.github/workflows/publish.yml
     secrets: inherit
     strategy:

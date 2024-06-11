@@ -40,16 +40,16 @@ on:
       - published
 
 jobs:
-  call-test:
+  test:
     if: github.event_name != 'release' || (github.event_name == 'release' && endsWith(github.ref, '_ruby')) # Skip everything if this isn't Ruby
     uses: ./.github/workflows/test.yml
     secrets: inherit
     with:
       INITCONTAINER_LANGUAGE: ruby
 
-  call-publish:
+  publish:
     if: github.event_name == 'release' && endsWith(github.ref, '_ruby') # Skip everything if this isn't Ruby
-    needs: call-test
+    needs: test
     uses: ./.github/workflows/publish.yml
     secrets: inherit
     with:

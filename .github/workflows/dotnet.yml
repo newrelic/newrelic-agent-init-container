@@ -40,7 +40,7 @@ on:
       - published
 
 jobs:
-  call-test:
+  test:
     if: github.event_name != 'release' || (github.event_name == 'release' && endsWith(github.ref, '_dotnet')) # Skip everything if this isn't .NET
     uses: ./.github/workflows/test.yml
     secrets: inherit
@@ -48,9 +48,9 @@ jobs:
       INITCONTAINER_LANGUAGE: dotnet
       TEST_APP_BUILD_ARGS: TARGETARCH=amd64
 
-  call-publish:
+  publish:
     if: github.event_name == 'release' && endsWith(github.ref, '_dotnet') # Skip everything if this isn't .NET
-    needs: call-test
+    needs: test
     uses: ./.github/workflows/publish.yml
     secrets: inherit
     with:
