@@ -44,3 +44,4 @@ jobs:
     secrets: inherit
     with:
       INITCONTAINER_LANGUAGE: dotnet
+      ARCHITECTURE: linux/amd64,linux/arm64
