@@ -11,8 +11,15 @@
 FROM alpine as build
 RUN apk update && apk add ca-certificates
 WORKDIR /instrumentation
+
+# Copy shell script to image
+COPY dotnet-agent-download.sh /
+# Set executable permissions on shell script
+RUN chmod +x /dotnet-agent-download.sh
+# Execute shell script to download agent, passing the architecture and version build args to it
 ARG TARGETARCH
-RUN wget -c "https://download.newrelic.com/dot_net_agent/latest_release/newrelic-dotnet-agent_${TARGETARCH}.tar.gz" -O - | tar -xz --strip-components 1
+ARG AGENT_VERSION
+RUN /dotnet-agent-download.sh $TARGETARCH $AGENT_VERSION
 
 FROM busybox
 COPY --from=build /instrumentation /instrumentation
