@@ -15,14 +15,20 @@
 
 name: "NodeJs Init Container CI"
 
+concurrency:
+  group: ${{ github.ref_name || github.ref || github.run_id }}-${{ github.workflow }}
+  cancel-in-progress: true
+
 on:
   pull_request:
     paths:
       - 'src/nodejs/**'
+      - 'tests/nodejs/**'
       - '.github/workflows/nodejs.yml'
   push:
     paths:
-      - 'nodejs/**'
+      - 'src/nodejs/**'
+      - 'tests/nodejs/**'
       - '.github/workflows/nodejs.yml'
     branches:
       - main
@@ -35,65 +41,33 @@ on:
 
 env:
   INITCONTAINER_LANGUAGE: nodejs
-  K8S_OPERATOR_IMAGE_TAG: edge
 
 jobs:
-  check-modified-files:
-    name: Check whether any Node-related files were modified, skip the test job if not
-    uses: ./.github/workflows/check-modified-files.yml
-    secrets: inherit
-    permissions:
-      contents: read
-    with:
-      agent-language: nodejs
-
   call-test:
-    uses: ./.github/workflows/test.yml
+    if: github.event_name != 'release' || (github.event_name == 'release' && endsWith(github.ref, '_nodejs')) # Skip everything if this isn't Node
     secrets: inherit
-    with:
-      RUNTIME_VERSION: ${{ matrix.node-version }}
-      INITCONTAINER_LANGUAGE: nodejs
-      K8S_OPERATOR_IMAGE_TAG: edge
-
-  call-publish:
-    if: github.event_name == 'release' && endsWith(github.ref, '_nodejs') # Skip everything if this isn't Node
-    runs-on: ubuntu-latest
-    needs:
-      - call-test
-
+    uses: ./.github/workflows/test.yml
     strategy:
       fail-fast: false
       matrix:
         node-version: [16, 18, 20]
-        agent-version: ['latest']
+    with:
+      INITCONTAINER_LANGUAGE: nodejs
+      INITCONTAINER_BUILD_ARGS: RUNTIME_VERSION=${{ matrix.node-version }}
+      TEST_APP_BUILD_ARGS: RUNTIME_VERSION=${{ matrix.node-version }}
 
-    steps:
-      - uses: actions/setup-node@v4
-      - name: Get agent version
-        run: |
-          if [[ ${{ matrix.agent-version }} == 'latest' ]]; then
-            cd nodejs && npm i newrelic@${{ matrix.agent-version }} && cd ..
-            echo AGENT_VERSION=$(cat nodejs/package.json | jq -r '.dependencies."newrelic"') >> $GITHUB_ENV 
-          elif 
-            echo AGENT_VERSION=${{ matrix.agent-version }} >> $GITHUB_ENV 
-          fi
-
-      - name: Format Agent Version
-        id: version
-        run: |
-          agent_version=${{ env.AGENT_VERSION }}  # Use output
-          echo NEW_RELIC_AGENT_VERSION=${{ env.AGENT_VERSION }} >> $GITHUB_ENV # Make ure to send the agent version to the dockerfile
-          agent_version=${agent_version##v}  # Remove v prefix
-          agent_version=${agent_version%%_${{ env.INITCONTAINER_LANGUAGE }}}  # Remove language suffix
-          agent_version=${agent_version}}_nodejs${{ matrix.node-version }}x  # Add Node runtime
-          echo "agent_version=${agent_version}" | tee -a "$GITHUB_OUTPUT"
-
-      - name: Call Publish Workflow for ${{ matrix.node-version }}
-        uses: ./.github/workflows/publish.yml
-        with:
-          INITCONTAINER_LANGUAGE: ${{ env.INITCONTAINER_LANGUAGE }}
-          K8S_OPERATOR_IMAGE_TAG: ${{ env.K8S_OPERATOR_IMAGE_TAG }}
-          NEW_RELIC_AGENT_VERSION: ${{ env.NEW_RELIC_AGENT_VERSION }}
-          AGENT_VERSION_TAG: ${{ steps.version.output.agent_version }}
-          RUNTIME_VERSION: ${{ matrix.node-version }}
-          DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
+  call-publish:
+    if: github.event_name == 'release' && endsWith(github.ref, '_nodejs') # Skip everything if this isn't Node
+    needs: call-test
+    uses: ./.github/workflows/publish.yml
+    secrets: inherit
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [16, 18, 20]
+    with:
+      INITCONTAINER_LANGUAGE: nodejs
+      DOCKER_IMAGE_TAG_SUFFIX: nodejs${{ matrix.node-version }}x
+      DOCKER_IMAGE_TAG_IS_DEFAULT_SUFFIX: ${{ matrix.node-version == 20 }}
+      BUILD_ARGS: |
+        RUNTIME_VERSION=${{ matrix.node-version }}
