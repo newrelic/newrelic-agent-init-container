@@ -1,0 +1,85 @@
+name: 'Extract Agent Version Tags'
+description: 'Extract agent version into tags for use with the Docker Metadata action.'
+
+inputs:
+  tag_suffix:
+    description: "Suffix to append to all version tags. (string with no preceding -)"
+    required: false
+  is_default_suffix:
+    description: "Boolean indicating if both suffixed and non-suffixed tags should be produced. (true|false)"
+    required: false
+
+outputs:
+  tags:
+    description: "Docker image tags formatted as input to docker/metadata-action"
+    value: ${{ steps.version.outputs.tags }}
+  container_version:
+    description: "Full container including build number"
+    value: ${{ steps.version.outputs.container_version }}
+  agent_version:
+    description: "Agent version parsed from container version by removing container build number"
+    value: ${{ steps.version.outputs.agent_version }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Extract Agent Version
+      id: version
+      shell: bash
+      run: |
+        # Grab inputs
+        release_tag=${{ github.ref_name }}
+        tag_suffix=${{ inputs.tag_suffix }}
+        is_default_suffix=${{ inputs.is_default_suffix }}
+
+        tags=()
+        version_array=()
+        add_tags_for_version_len() {
+            version_len=$1
+            tag_priority=$(( 1015 - ${version_len} ))
+            if [[ ${version_len} -le ${#version_array[@]} ]]; then
+                sliced_version=$(echo ${version_array[@]:0:${version_len}} | sed "s/ /./g")
+                if [[ -n ${tag_suffix} ]]; then
+                    tags+=("type=raw,value=${sliced_version}-${tag_suffix},priority=$(( tag_priority - 10 ))")
+                    if [[ ${is_default_suffix} == "true" ]]; then
+                        tags+=("type=raw,value=${sliced_version},priority=${tag_priority}")
+                    fi
+                else
+                    tags+=("type=raw,value=${sliced_version},priority=${tag_priority}")
+                fi
+            fi
+        }
+
+        output() {
+            echo "$1=$2" | tee -a $GITHUB_OUTPUT
+        }
+
+        # Get container version from release tag by removing v prefix and language suffix
+        container_version=$(echo ${release_tag} | sed -e "s/^v//g" -e "s/_[a-zA-Z]*//g")
+
+        # Split agent version to array
+        IFS="$IFS."; for i in ${container_version}; do version_array+=($i); done; IFS="${IFS:0:3}"
+
+        # Add tags for each version length
+        for i in {1..5}; do add_tags_for_version_len $i; done
+
+        # Add latest tags
+        if [[ -n ${tag_suffix} ]]; then
+            tags+=("type=raw,value=${tag_suffix},priority=1020")
+            if [[ ${is_default_suffix} == "true" ]]; then
+                tags+=("type=raw,value=latest,priority=1021")
+            fi
+        else
+            tags+=("type=raw,value=latest,priority=1020")
+        fi
+
+        # Output tags as multiline env var
+        {
+            echo "tags<<EOF"
+            for tag in ${tags[@]}; do echo "${tag}"; done
+            echo "EOF"
+        } | tee -a $GITHUB_OUTPUT
+
+        # Agent version strips the last build number off the end
+        output agent_version $(echo ${version_array[@]:0:$((${#version_array[@]} - 1))} | sed "s/ /./g")
+        output container_version $container_version
