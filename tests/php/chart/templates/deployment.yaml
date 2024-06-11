@@ -15,25 +15,27 @@ spec:
       annotations:
         instrumentation.newrelic.com/inject-php: "true"
         instrumentation.newrelic.com/php-exec-cmd: "apache2-foreground"
-  spec:
-    containers:
-      - name: test-app-php
-        image: e2e/test-app-php:e2e
-        imagePullPolicy: Never
-        ports:
-          - containerPort: 80
-        env:
+    spec:
+      containers:
+        - name: test-app-php
+          image: e2e/test-app-php:e2e
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 80
+          env:
           - name: NEW_RELIC_APP_NAME
             value: k8s-e2e-test-app-php
           - name: NEW_RELIC_LABELS
-            value: 'testkey:{{ .Values.scenarioTag | default "NOTSET" }}'
+            value: "testKey:{{ .Values.scenarioTag | default "NOTSET" }}"
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: test-app-php-service
 spec:
+  type: NodePort
   ports:
   - port: 80
+    targetPort: 80
   selector:
     app: test-app-php

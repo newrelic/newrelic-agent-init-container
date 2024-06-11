@@ -3,7 +3,7 @@
 #    one init container will be created to copy the files to your app's container.
 #  - Grant the necessary access to the files in the `/instrumentation` directory.
 FROM alpine:latest as build
-RUN apk update && apk add ca-certificates
+RUN apk --no-cache add ca-certificates
 ARG AGENT_VERSION
 ARG LIBC
 WORKDIR /instrumentation
