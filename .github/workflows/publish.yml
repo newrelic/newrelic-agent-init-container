@@ -20,53 +20,58 @@ on:
       INITCONTAINER_LANGUAGE:
         required: true
         type: string
-      K8S_OPERATOR_IMAGE_TAG:
-        required: true
-        type: string
-      NEW_RELIC_AGENT_VERSION:
-        required: true
-        type: string
-      DOCKER_TOKEN:
-        required: true
-        type: string
-      AGENT_VERSION_TAG:
-        required: false
-        type: string
-      RUNTIME_VERSION:
-        required: false
-        type: string
       ARCHITECTURE:
         required: false
         type: string
+        default: "linux/amd64,linux/arm64,linux/arm"
+      BUILD_ARGS:
+        required: false
+        type: string
+        default: ""
+      DOCKER_IMAGE_TAG_SUFFIX:
+        description: "Suffix to append to all version tags. (string with no preceding -)"
+        required: false
+        type: string
+        default: ""
+      DOCKER_IMAGE_TAG_IS_DEFAULT_SUFFIX:
+        description: "Boolean indicating if both suffixed and non-suffixed tags should be produced. (true|false)"
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   publish:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@a4aa98b93cab29d9b1101a6143fb8bce00e2eac4 # v2.7.1
+        with:
+          disable-sudo: true
+          egress-policy: audit
+
       - name: Checkout code
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # 4.1.1
-
-      - name: Set architecture or use default
-        run: |
-          if [[ ${{ input.ARCHITECTURE }} != '' ]]; then
-            echo architecture="${{ input.ARCHITECTURE }}" >> $GITHUB_ENV 
-          elif 
-            echo architecture="linux/amd64,linux/arm64,linux/arm" >> $GITHUB_ENV 
-          fi
 
       - name: Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@d70bba72b1f3fd22344832f00baa16ece964efeb # 3.3.0
 
+      - name: Extract Agent Version Tags
+        id: version
+        uses: ./.github/actions/extract_agent_version_tags
+        with:
+          tag_suffix: ${{ inputs.DOCKER_IMAGE_TAG_SUFFIX }}
+          is_default_suffix: ${{ inputs.DOCKER_IMAGE_TAG_IS_DEFAULT_SUFFIX }}
+
       - name: Generate Docker metadata (tags and labels)
         id: meta
         uses: docker/metadata-action@8e5442c4ef9f78752691e2d8f8d19755c6f78e81 # 5.5.1
         with:
-          images: newrelic/newrelic-${{ input.INITCONTAINER_LANGUAGE }}-init
-          tags: |
-            type=raw,value=${{ input.AGENT_VERSION_TAG }}
-            type=raw,value=latest
+          images: newrelic/newrelic-${{ inputs.INITCONTAINER_LANGUAGE }}-init
+          flavor: |
+            latest=false
+          tags: ${{ steps.version.outputs.tags }}
 
       - name: Login to Docker Hub Container Registry
         uses: docker/login-action@e92390c5fb421da1463c202d546fed0ec5c39f20 # 3.1.0
@@ -78,10 +83,10 @@ jobs:
         uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0 # 5.3.0
         with:
           push: true
-          context: src/${{ input.INITCONTAINER_LANGUAGE }}/
-          platforms: ${{ env.architecture }}
+          context: src/${{ inputs.INITCONTAINER_LANGUAGE }}/
+          platforms: ${{ inputs.ARCHITECTURE }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            NEW_RELIC_AGENT_VERSION=${{ input.NEW_RELIC_AGENT_VERSION }}
-            RUNTIME_VERSION=${{ input.RUNTIME_VERSION }}
+            AGENT_VERSION=${{ steps.version.outputs.agent_version }}
+            ${{ inputs.BUILD_ARGS }}
