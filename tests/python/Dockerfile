@@ -1,4 +1,5 @@
-FROM python:3.12.3-bullseye
+ARG PYTHON_VERSION=3.12
+FROM python:$PYTHON_VERSION
 
 RUN pip install flask==3.0.3 gunicorn==22.0.0
 

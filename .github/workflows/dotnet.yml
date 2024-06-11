@@ -1,132 +1,47 @@
 # Copyright New Relic, Inc.
 # SPDX-License-Identifier: Apache-2.0
 ---
-name: .NET Agent CI
+
+name: ".NET Init Container CI"
+
+concurrency:
+  group: ${{ github.ref_name || github.ref || github.run_id }}-${{ github.workflow }}
+  cancel-in-progress: true
 
 on:
-  workflow_dispatch: # run test job always, optionally publish a specific version
-    inputs:
-      publish_agent:
-        description: Publish the agent?
-        type: boolean
-        required: true
-        default: false
-      agent_version:
-        description: Agent version to publish
-        type: string
-        required: true
-        default: 'xx.xx.xx'
-      set_latest_tag:
-        description: Set the "latest" image tag?
-        type: boolean
-        default: false
-  pull_request: # run check modified files / test jobs
+  pull_request:
     paths:
       - 'src/dotnet/**'
+      - 'tests/dotnet/**'
       - '.github/workflows/dotnet.yml'
-  push: # run check modified files / test jobs
+  push:
+    paths:
+      - 'src/dotnet/**'
+      - 'tests/dotnet/**'
+      - '.github/workflows/dotnet.yml'
     branches:
       - main
-    paths:
-      - 'dotnet/**'
-      - '.github/workflows/dotnet.yml'
     # Do not run when a tag is created.
     tags-ignore:
-      - "**"  
-  release: # run check modified files / test / publish jobs
+      - "**"
+  release:
     types:
       - published
-      
-# only allow one instance of this workflow to be running per PR or branch, cancels any that are already running
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
-  
-env:
-  K8S_OPERATOR_IMAGE_TAG: edge
-  DOTNET_AGENT_ARCHITECTURE: amd64 # We will only test one architecture for now. Probably no need to test all of them
-
-permissions:
-  contents: read
 
 jobs:
-  check-modified-files:
-    name: Check whether any Dotnet-related files were modified
-    uses: ./.github/workflows/check-modified-files.yml
-    secrets: inherit
-    permissions:
-      contents: read
-    with:
-      agent-language: dotnet
-
   test:
+    if: github.event_name != 'release' || (github.event_name == 'release' && endsWith(github.ref, '_dotnet')) # Skip everything if this isn't .NET
     uses: ./.github/workflows/test.yml
-    needs: check-modified-files
-    # run only if files were modified or the workflow was manually invoked or on a publish
-    if: needs.check-modified-files.outputs.files-changed == 'true' || github.event_name == 'workflow_dispatch' || (github.event_name == 'release' && endsWith(github.ref_name, '_dotnet'))
     secrets: inherit
     with:
       INITCONTAINER_LANGUAGE: dotnet
-      K8S_OPERATOR_IMAGE_TAG: edge
-      TEST_APP_BUILD_ARGS: --build-opt=build-arg=TARGETARCH=amd64
+      TEST_APP_BUILD_ARGS: TARGETARCH=amd64
 
   publish:
-    runs-on: ubuntu-latest
-    # publish on a dotnet release or when selected on a manual invocation
-    if: (github.event_name == 'release' && endsWith(github.ref_name, '_dotnet')) || (github.event_name == 'workflow_dispatch' && inputs.publish_agent)
-    needs:
-      - test
-
-    steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@a4aa98b93cab29d9b1101a6143fb8bce00e2eac4 # v2.7.1
-        with:
-          disable-sudo: true
-          egress-policy: audit
-
-      - name: Extract Agent Version from release tag or workflow input
-        id: version
-        run: |
-          if [[ ${{ github.event_name == 'workflow_dispatch' }} ]]; then
-            echo "agent_version=${{ inputs.agent_version }}" | tee -a "$GITHUB_OUTPUT"
-          else
-            agent_version=${{ github.ref_name }}  # Use tag name
-            agent_version=${agent_version##v}  # Remove v prefix
-            agent_version=${agent_version%%_dotnet}  # Remove language suffix
-            echo "agent_version=${agent_version}" | tee -a "$GITHUB_OUTPUT"
-          fi
-
-      - name: Checkout code
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # 4.1.1
-        with:
-          persist-credentials: false
-          fetch-depth: 0
-
-      - name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@d70bba72b1f3fd22344832f00baa16ece964efeb # 3.3.0
-
-      - name: Generate Docker metadata (tags and labels)
-        id: meta
-        uses: docker/metadata-action@8e5442c4ef9f78752691e2d8f8d19755c6f78e81 # 5.5.1
-        with:
-          images: newrelic/newrelic-dotnet-init
-          tags: |
-            type=raw,value=${{ steps.version.outputs.agent_version }}
-            type=raw,value=latest,enable=${{ github.event_name == 'release' || inputs.set_latest_tag }}
-
-      - name: Login to Docker Hub Container Registry
-        uses: docker/login-action@e92390c5fb421da1463c202d546fed0ec5c39f20 # 3.1.0
-        with:
-          username: ${{ secrets.DOTNET_DOCKERHUB_USERNAME}}
-          password: ${{ secrets.DOTNET_DOCKERHUB_TOKEN }}
-
-      - name: Build and publish .NET Agent multi-arch init container image
-        uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0 # 5.3.0
-        with:
-          push: true
-          context: src/dotnet/
-          platforms: linux/amd64,linux/arm64
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-
+    if: github.event_name == 'release' && endsWith(github.ref, '_dotnet') # Skip everything if this isn't .NET
+    needs: test
+    uses: ./.github/workflows/publish.yml
+    secrets: inherit
+    with:
+      INITCONTAINER_LANGUAGE: dotnet
+      ARCHITECTURE: linux/amd64,linux/arm64

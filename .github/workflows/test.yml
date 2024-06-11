@@ -1,16 +1,5 @@
-# Copyright 2010 New Relic, Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# Copyright New Relic, Inc.
+# SPDX-License-Identifier: Apache-2.0
 ---
 name: Init Container Test
 
@@ -21,9 +10,10 @@ on:
         required: true
         type: string
       K8S_OPERATOR_IMAGE_TAG:
-        required: true
+        required: false
         type: string
-      RUNTIME_VERSION:
+        default: edge
+      INITCONTAINER_BUILD_ARGS:
         required: false
         type: string
       TEST_APP_BUILD_ARGS:
@@ -41,11 +31,15 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Extract Agent Version from Release Tag
+        id: version
+        if: github.event_name == 'release'
+        run: |
+          echo AGENT_VERSION=$(echo "${{ github.ref_name }}" | sed -e "s/^v//g" -e "s/_[a-zA-Z]*//g" -e "s/\.[0-9]*$//g") | tee -a ${GITHUB_ENV}
+
       - name: Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@d70bba72b1f3fd22344832f00baa16ece964efeb # 3.3.0
-        with:
-          RUNTIME_VERSION: ${{ inputs.RUNTIME_VERSION }}
 
       - name: Start minikube
         uses: medyagh/setup-minikube@317d92317e473a10540357f1f4b2878b80ee7b95 # 0.0.16
@@ -70,12 +64,16 @@ jobs:
 
       - name: Build init container
         run: |
-          minikube image build -t e2e/newrelic-${{ inputs.INITCONTAINER_LANGUAGE }}-init:e2e src/${{ inputs.INITCONTAINER_LANGUAGE }}/
+          BUILD_ARGS=${{ inputs.INITCONTAINER_BUILD_ARGS }}
+          if [[ -n "${BUILD_ARGS}" ]]; then BUILD_ARGS="--build-opt=build-arg=${BUILD_ARGS}"; fi
+          if [[ -n "${{ env.AGENT_VERSION }}" ]]; then BUILD_ARGS="${BUILD_ARGS:-} --build-opt=build-arg=AGENT_VERSION=${{ env.AGENT_VERSION }}"; fi
+          minikube image build -t e2e/newrelic-${{ inputs.INITCONTAINER_LANGUAGE }}-init:e2e src/${{ inputs.INITCONTAINER_LANGUAGE }}/ ${BUILD_ARGS}
 
       - name: Build test app container
         run: |
-          minikube image build -t e2e/test-app-${{ inputs.INITCONTAINER_LANGUAGE }}:e2e tests/${{ inputs.INITCONTAINER_LANGUAGE }}/ \
-            ${{ inputs.TEST_APP_BUILD_ARGS}}
+          BUILD_ARGS=${{ inputs.TEST_APP_BUILD_ARGS }}
+          if [[ -n "${BUILD_ARGS}" ]]; then BUILD_ARGS="--build-opt=build-arg=${BUILD_ARGS}"; fi
+          minikube image build -t e2e/test-app-${{ inputs.INITCONTAINER_LANGUAGE }}:e2e tests/${{ inputs.INITCONTAINER_LANGUAGE }}/ ${BUILD_ARGS}
 
       - name: Run e2e-test
         uses: newrelic/newrelic-integration-e2e-action@a97ced80a4841c8c6261d1f9dca6706b1d89acb1  # 1.11.0

@@ -7,14 +7,14 @@
 # - Ensure you have `newrelic`, and`@newrelic/native-metrics`.
 # - Grant the necessary access to `/instrumentation` directory. `chmod -R go+r /instrumentation`
 ARG RUNTIME_VERSION=20
-ARG NEW_RELIC_AGENT_VERSION=latest
 
 FROM node:${RUNTIME_VERSION} AS build
 
 WORKDIR /instrumentation
 
 # Install dependencies
-RUN npm install newrelic@${NEW_RELIC_AGENT_VERSION}
+ARG AGENT_VERSION=latest
+RUN npm install newrelic@${AGENT_VERSION}
 
 # copy instrumentation file
 COPY newrelicinstrumentation.js .
