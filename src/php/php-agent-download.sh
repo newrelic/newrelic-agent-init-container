@@ -24,5 +24,5 @@ else
   url="${url}.tar.gz"
 fi
 
-# echo "url: $url"
+echo "url: $url"
 wget -c ${url} -O - | tar -xz --strip-components 1
