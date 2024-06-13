@@ -12,5 +12,7 @@ FROM base AS final
 WORKDIR /app
 COPY --from=build /app/publish .
 
+COPY newrelic.config .
+
 # test by browsing to http://<hostname>:<port>/WeatherForecast
 ENTRYPOINT ["dotnet", "WeatherForecast.dll"]
