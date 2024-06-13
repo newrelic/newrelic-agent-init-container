@@ -13,7 +13,6 @@ WORKDIR /app
 COPY --from=build /app/publish .
 
 COPY newrelic.config .
-RUN chmod ugo+r newrelic.config
 
 # test by browsing to http://<hostname>:<port>/WeatherForecast
 ENTRYPOINT ["dotnet", "WeatherForecast.dll"]
