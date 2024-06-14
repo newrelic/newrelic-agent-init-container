@@ -14,11 +14,17 @@ on:
       - 'src/nodejs/**'
       - 'tests/nodejs/**'
       - '.github/workflows/nodejs.yml'
+      - '.github/workflows/publish.yml'
+      - '.github/workflows/test.yml'
+      - '.github/actions/**'
   push:
     paths:
       - 'src/nodejs/**'
       - 'tests/nodejs/**'
       - '.github/workflows/nodejs.yml'
+      - '.github/workflows/publish.yml'
+      - '.github/workflows/test.yml'
+      - '.github/actions/**'
     branches:
       - main
     # Do not run when a tag is created.
