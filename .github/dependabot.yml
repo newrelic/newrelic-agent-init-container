@@ -8,8 +8,58 @@ updates:
       github-actions:
         patterns:
           - "*"
+          
+  # scan Dockerfile for each language agent, in src and tests directories
   - package-ecosystem: docker
-    directory: /
+    directory: /src/dotnet
+    schedule:
+      interval: weekly
+  - package-ecosystem: docker
+    directory: /tests/dotnet
     schedule:
       interval: weekly
 
+  - package-ecosystem: docker
+    directory: /src/java
+    schedule:
+      interval: weekly
+  - package-ecosystem: docker
+    directory: /tests/java
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: docker
+    directory: /src/nodejs
+    schedule:
+      interval: weekly
+  - package-ecosystem: docker
+    directory: /tests/nodejs
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: docker
+    directory: /src/php
+    schedule:
+      interval: weekly
+  - package-ecosystem: docker
+    directory: /tests/php
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: docker
+    directory: /src/python
+    schedule:
+      interval: weekly
+  - package-ecosystem: docker
+    directory: /tests/python
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: docker
+    directory: /src/ruby
+    schedule:
+      interval: weekly
+  - package-ecosystem: docker
+    directory: /tests/ruby
+    schedule:
+      interval: weekly
