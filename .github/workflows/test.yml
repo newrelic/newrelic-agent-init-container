@@ -27,7 +27,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # 4.1.1
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # 4.1.7
         with:
           persist-credentials: false
 
@@ -42,7 +42,7 @@ jobs:
         uses: docker/setup-buildx-action@d70bba72b1f3fd22344832f00baa16ece964efeb # 3.3.0
 
       - name: Start minikube
-        uses: medyagh/setup-minikube@317d92317e473a10540357f1f4b2878b80ee7b95 # 0.0.16
+        uses: medyagh/setup-minikube@d8c0eb871f6f455542491d86a574477bd3894533 # 0.0.18
 
       - name: Deploy cert-manager to minikube
         run: |
