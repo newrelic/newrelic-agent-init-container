@@ -1,5 +1,9 @@
+# Copyright New Relic, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 # NOTE: This file should always be named `repolinter.yml` to allow
 # workflow_dispatch to work properly
+---
 name: Repolinter Action
 
 # NOTE: This workflow will ONLY check the default branch!
@@ -8,24 +12,41 @@ name: Repolinter Action
 # filtered in the "Test Default Branch" step.
 on: [push, workflow_dispatch]
 
+# Declare default permissions as read only.
+permissions: read-all
+
 jobs:
   repolint:
     name: Run Repolinter
     runs-on: ubuntu-latest
+    # don't run this job if triggered by Dependabot
+    if: ${{ github.actor != 'dependabot[bot]' }}
+    permissions:
+      contents: read
+      issues: write
+
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@17d0e2bd7d51742c71671bd19fa12bdc9d40a3d6 # v2.8.1
+        with:
+          disable-sudo: true
+          egress-policy: audit
+
       - name: Test Default Branch
         id: default-branch
-        uses: actions/github-script@v2
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         with:
           script: |
-            const data = await github.repos.get(context.repo)
+            const data = await github.rest.repos.get(context.repo)
             return data.data && data.data.default_branch === context.ref.split('/').slice(-1)[0]
+
       - name: Checkout Self
         if: ${{ steps.default-branch.outputs.result == 'true' }}
-        uses: actions/checkout@v2
+        uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
+
       - name: Run Repolinter
         if: ${{ steps.default-branch.outputs.result == 'true' }}
-        uses: newrelic/repolinter-action@v1
+        uses: newrelic/repolinter-action@3f4448f855c351e9695b24524a4111c7847b84cb # v1.7.0
         with:
           config_url: https://raw.githubusercontent.com/newrelic/.github/main/repolinter-rulesets/community-project.yml
           output_type: issue
