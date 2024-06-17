@@ -28,6 +28,9 @@ on:
     types:
       - published
 
+# Declare default permissions as read only.
+permissions: read-all
+  
 jobs:
   test:
     if: github.event_name != 'release' || (github.event_name == 'release' && endsWith(github.ref, '_ruby')) # Skip everything if this isn't Ruby
