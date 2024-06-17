@@ -8,7 +8,7 @@
 #   Those two packages are essential to Python auto-instrumentation.
 # - Grant the necessary access to `/instrumentation` directory. `chmod -R go+r /instrumentation`
 
-FROM python:3.10-alpine AS build
+FROM python:3.10-alpine@sha256:7e73eab259b777c76ad93e42180d468f326eff315c212bc80d4dffdf4695163a AS build
 
 WORKDIR /operator-build
 
@@ -41,7 +41,7 @@ COPY newrelic_k8s_operator.py ./workspace/
 COPY sitecustomize.py ./workspace/sitecustomize.py
 
 # initcontainer
-FROM busybox
+FROM busybox:latest@sha256:9ae97d36d26566ff84e8893c64a6dc4fe8ca6d1144bf5b87b2b85a32def253c7
 
 COPY --from=build /operator-build/workspace /instrumentation
 RUN chmod -R go+r /instrumentation
