@@ -31,6 +31,9 @@ on:
 env:
   INITCONTAINER_LANGUAGE: nodejs
 
+# Declare default permissions as read only.
+permissions: read-all
+
 jobs:
   test:
     if: github.event_name != 'release' || (github.event_name == 'release' && endsWith(github.ref, '_nodejs')) # Skip everything if this isn't Node
