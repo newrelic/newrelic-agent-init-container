@@ -3,7 +3,7 @@
 #   one init container will be created to copy all the content in `/instrumentation` directory to your app's container.
 # - Grant the necessary access to `/instrumentation` directory. `chmod -R go+r /instrumentation`
 
-FROM ruby:latest AS build
+FROM ruby:latest@sha256:8584c968202ea356984262c4422461ee3a6022c0c4d8fb517b7b9c6395556670 AS build
 WORKDIR /operator-build
 
 ARG AGENT_VERSION
@@ -12,7 +12,7 @@ ARG AGENT_VERSION
 ADD Gemfile .
 RUN BUNDLE_PATH=workspace bundle install
 
-FROM busybox
+FROM busybox:latest@sha256:9ae97d36d26566ff84e8893c64a6dc4fe8ca6d1144bf5b87b2b85a32def253c7
 
 # Copy build artifacts from previous
 COPY --from=build /operator-build /operator-build

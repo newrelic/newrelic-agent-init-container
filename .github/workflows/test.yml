@@ -20,6 +20,9 @@ on:
         required: false
         type: string
 
+# Declare default permissions as read only.
+permissions: read-all
+
 jobs:
   test:
     name: Run E2E tests for ${{ inputs.INITCONTAINER_LANGUAGE }}
