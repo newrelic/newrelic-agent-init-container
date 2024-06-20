@@ -16,8 +16,8 @@ Agent versions at New Relic either follow [semver](https://semver.org/) (eg. `1.
 | `latest`   | The latest agent release                                      |
 | `9`        | The latest `9.*` release                                      |
 | `9.10`     | The latest `9.10.*` release                                   |
-| `9.10.0`   | The latest **initcontainer build** of agent version `9.10.0`  |
-| `9.10.0.0` | The initial **initcontainer build** of agent version `9.10.0` |
+| `9.10.0`   | The latest **init container build** of agent version `9.10.0`  |
+| `9.10.0.0` | The initial **init container build** of agent version `9.10.0` |
 
 In this example, once the tag `9.10.0.0` is published it will never be replaced. If a rebuilt container for agent version `v9.10.0` is released, it will be published as `9.10.0.1`, incrementing the init container build number.
 
@@ -46,7 +46,7 @@ Under the `tests/` folder, there is a Makefile for local building and testing of
 
 ### Quickstart
 
-1. Specify environment variables with the language of the initcontainer you wish to build locally, and your [New Relic License Key](https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/).
+1. Specify environment variables with the language of the init container you wish to build locally, and your [New Relic License Key](https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/).
 ```bash
 export INITCONTAINER_LANGUAGE=python
 export NEW_RELIC_LICENSE_KEY=***
@@ -62,7 +62,7 @@ make -f tests/Makefile test
 
 ### Step by Step
 
-1. Specify environment variables with the language of the initcontainer you wish to build locally, and your [New Relic License Key](https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/).
+1. Specify environment variables with the language of the init container you wish to build locally, and your [New Relic License Key](https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/).
 ```bash
 export INITCONTAINER_LANGUAGE=python
 export NEW_RELIC_LICENSE_KEY=***
