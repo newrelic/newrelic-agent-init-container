@@ -12,16 +12,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import requests
 import os
 import shutil
 import subprocess
 import tempfile
+from datetime import datetime
 
+import requests
 
 AGENT_VERSION = os.getenv("AGENT_VERSION", "").lstrip("v")
 FILE_DIR = os.path.dirname(__file__)
 WORKSPACE_DIR = os.path.join(FILE_DIR, "workspace")
+
+
+def get_python_releases(package_info):
+    releases = []
+    for key, agent_version_details in package_info["releases"].items():
+        if len(agent_version_details) > 0 and agent_version_details[0].get("upload_time", ""):
+            upload_date = agent_version_details[0]["upload_time"].split("T")[0]
+            upload_date = datetime.strptime(upload_date, "%Y-%m-%d")
+            artifacts = [artifact["url"] for artifact in agent_version_details]
+            releases.append({"version": key, "release_date": upload_date, "artifacts": artifacts})
+    
+    releases.sort(key=lambda x: x.get("release_date"))
+    return releases
 
 
 def main():
@@ -32,27 +46,19 @@ def main():
         # Fetch JSON list of all agent package artifacts
         resp = session.get("https://pypi.org/pypi/newrelic/json")
         resp.raise_for_status()
-        resp_dict = resp.json()
+        releases = get_python_releases(resp.json())
 
         if AGENT_VERSION:
             # Grab the supplied release version
-            release = resp_dict["releases"][AGENT_VERSION]
+            release = releases[AGENT_VERSION]
         else:
             # Grab latest release version
-            release = list(resp_dict["releases"].values())[-1]
+            release = releases[-1]
 
         # Filter artifacts for wheels and tarballs
-        wheel_urls = [
-            artifact["url"]
-            for artifact in release
-            if artifact["url"].endswith(".whl")
-        ]
+        wheel_urls = [url for url in release["artifacts"] if url.endswith(".whl")]
 
-        tarball_url = [
-            artifact["url"]
-            for artifact in release
-            if artifact["url"].endswith(".tar.gz")
-        ][0]
+        tarball_url = [url for url in release["artifacts"] if url.endswith(".tar.gz")][0]
 
         # Make workspace directory
         if not os.path.exists(WORKSPACE_DIR):
@@ -61,7 +67,7 @@ def main():
         # Download tarball
         resp = session.get(tarball_url)
         resp.raise_for_status()
-        
+
         tarball_filepath = os.path.join(WORKSPACE_DIR, "newrelic.tar.gz")
         with open(tarball_filepath, "wb") as file:
             file.write(resp.content)
