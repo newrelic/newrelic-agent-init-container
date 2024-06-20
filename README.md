@@ -9,7 +9,7 @@ Init containers published here are intended for use with the New Relic [Kubernet
 
 ## Image Tagging Conventions
 
-Agent versions at New Relic either follow [semver](https://semver.org/) (eg. `1.2.3`) or may contain an additional build number (eg. `1.2.3.99`). An example table below shows what Python Agent version would be pulled from various tags.
+Agent versions at New Relic either follow [semver](https://semver.org/) (eg. `1.2.3`) or may contain an additional build number (eg. `1.2.3.99`). The example table below shows what Python Agent version would be pulled from various tags.
 
 | Image Tag  | Agent Version                                                 |
 |------------|---------------------------------------------------------------|
@@ -19,7 +19,7 @@ Agent versions at New Relic either follow [semver](https://semver.org/) (eg. `1.
 | `9.10.0`   | The latest **initcontainer build** of agent version `9.10.0`  |
 | `9.10.0.0` | The initial **initcontainer build** of agent version `9.10.0` |
 
-In this example, once the tag `9.10.0.0` is published it will never be replaced. If a rebuilt container for agent verison `v9.10.0` is published, it will be published as `9.10.0.1`, incrementing the initcontainer build number.
+In this example, once the tag `9.10.0.0` is published it will never be replaced. If a rebuilt container for agent version `v9.10.0` is released, it will be published as `9.10.0.1`, incrementing the init container build number.
 
 ### NodeJS
 
@@ -35,7 +35,7 @@ Each NodeJS container is only compatible with a single major version of NodeJS. 
 
 ## Local Testing
 
-Under the `tests/` folder, there is a Makefile for local building and testing of initcontainer images.
+Under the `tests/` folder, there is a Makefile for local building and testing of init container images.
 
 ### Prerequisites
 
@@ -51,11 +51,11 @@ Under the `tests/` folder, there is a Makefile for local building and testing of
 export INITCONTAINER_LANGUAGE=python
 export NEW_RELIC_LICENSE_KEY=***
 ```
-2. On the first test run, start the minikube cluster, all dependencies, and build the test app. A browser window will open if the deployment succeeds.
+2. On the first test run, start the minikube cluster and all dependencies, and build the test app. A browser window will open if the deployment succeeds.
 ```bash
 make -f tests/Makefile all
 ```
-3. On subsequent runs, rebuild just the initcontainer and test app. A browser window will open if the deployment succeeds.
+3. On subsequent runs, rebuild just the init container and test app. A browser window will open if the deployment succeeds.
 ```bash
 make -f tests/Makefile test
 ```
@@ -79,7 +79,7 @@ make -f tests/Makefile cert-manager
 ```bash
 make -f tests/Makefile operator
 ```
-5. Build a local copy of the initcontainer in minikube.
+5. Build a local copy of the init container in minikube.
 ```bash
 make -f tests/Makefile build-initcontainer
 ```
@@ -87,7 +87,7 @@ make -f tests/Makefile build-initcontainer
 ```bash
 make -f tests/Makefile build-testapp
 ```
-7. Deploy the test app instrumented with the initcontainer. A browser window will open if the deployment succeeds.
+7. Deploy the test app instrumented with the init container. A browser window will open if the deployment succeeds.
 ```bash
 make -f tests/Makefile test
 ```
@@ -96,9 +96,9 @@ make -f tests/Makefile test
 
 To release one or more old versions of the agent, follow these steps.
 
-1. Start with the **oldest** agent version that must be rereleased. **Do not publish another agent version until the previous one is available on Docker Hub, or tags may be overwritten.**
+1. Start with the **oldest** agent version that must be re-released. **Do not publish another agent version until the previous one is available on Docker Hub, or tags may be overwritten.**
 2. Navigate to the [releases](https://github.com/newrelic/newrelic-agent-init-container/releases) page and draft a new release.
-3. Decide on a new version number, which should be the agent version with an extra initcontainer build number on the end. If `.0` of the initcontainer has already been released do **NOT** rerelease that version and instead increment it to `.1` (or higher).
+3. Decide on a new version number, which should be the agent version with an extra init container build number at the end. If `.0` of the init container has already been released do **NOT** rerelease that version and instead increment it to `.1` (or higher).
 4. Create a new tag from main with the format `v<AGENT_VERSION>.<INITCONTAINER_BUILD_NUMBER>_<LANGUAGE>` (eg. `v9.11.0.1_python` for the second build of Python Agent version `v9.11.0`).
 5. Name the release `New Relic <LANGUAGE> Agent v<AGENT_VERSION>.<INITCONTAINER_BUILD_NUMBER>` (eg. `New Relic Python Agent v9.11.0.1`).
 6. Publish the release, and wait for the GitHub Action workflow to publish the image to Docker Hub.
@@ -124,7 +124,7 @@ crane copy $IMAGE_NAME:9.11.0.0 $IMAGE_NAME:latest
 
 ### Example
 
-Republishing Python Agent `v8.10.0` as initcontainer `8.10.0.1` when `v8.10.1` through `v9.11.0` are already published will overwrite the tags `latest`, `8` and `8.10`. These tags should be corrected to point to the following: 
+Republishing Python Agent `v8.10.0` as init container `8.10.0.1` when `v8.10.1` through `v9.11.0` are already published will overwrite the tags `latest`, `8` and `8.10`. These tags should be corrected to point to the following: 
 
 * `latest` -> `v9.11.0`, the newest agent version.
 * `8` -> `v8.11.0`, the newest `8.*` version.
