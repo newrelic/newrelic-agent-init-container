@@ -21,7 +21,7 @@ on:
         description: "Name for the published docker image, defaults to newrelic/newrelic-${{ inputs.INITCONTAINER_LANGUAGE }}-init"
         required: false
         type: string
-        default: "newrelic/newrelic-${{ inputs.INITCONTAINER_LANGUAGE }}-init"
+        default: ""
       DOCKER_IMAGE_TAG_SUFFIX:
         description: "Suffix to append to all version tags. (string with no preceding -)"
         required: false
@@ -65,7 +65,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@8e5442c4ef9f78752691e2d8f8d19755c6f78e81 # 5.5.1
         with:
-          images: newrelic/newrelic-${{ inputs.INITCONTAINER_LANGUAGE }}-init
+          images: ${{ inputs.DOCKER_IMAGE_NAME || format('newrelic/newrelic-{0}-init', inputs.INITCONTAINER_LANGUAGE) }}
           flavor: |
             latest=false
           tags: ${{ steps.version.outputs.tags }}
