@@ -46,7 +46,7 @@ Under the `tests/` folder, there is a Makefile for local building and testing of
 
 ### Quickstart
 
-1. Specify a environment variables with the lanugage of initcontainer you wish to build locally, and your [New Relic License Key](https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/).
+1. Specify environment variables with the language of the initcontainer you wish to build locally, and your [New Relic License Key](https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/).
 ```bash
 export INITCONTAINER_LANGUAGE=python
 export NEW_RELIC_LICENSE_KEY=***
@@ -62,7 +62,7 @@ make -f tests/Makefile test
 
 ### Step by Step
 
-1. Specify a environment variables with the lanugage of initcontainer you wish to build locally, and your [New Relic License Key](https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/).
+1. Specify environment variables with the language of the initcontainer you wish to build locally, and your [New Relic License Key](https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/).
 ```bash
 export INITCONTAINER_LANGUAGE=python
 export NEW_RELIC_LICENSE_KEY=***
