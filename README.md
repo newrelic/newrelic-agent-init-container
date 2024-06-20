@@ -5,7 +5,7 @@ This repository contains init containers and GHA workflows to automatically rele
 
 ## Usage
 
-Initcontainers published here are for use with the New Relic [Kubernetes Agents Operator](https://github.com/newrelic/k8s-agents-operator/). See the [Installation](https://github.com/newrelic/k8s-agents-operator/#installation) section for example uses.
+Init containers published here are intended for use with the New Relic [Kubernetes Agents Operator](https://github.com/newrelic/k8s-agents-operator/). See the [Installation](https://github.com/newrelic/k8s-agents-operator/#installation) section for example use cases.
 
 ## Image Tagging Conventions
 
