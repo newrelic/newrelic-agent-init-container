@@ -17,6 +17,11 @@ on:
         required: false
         type: string
         default: ""
+      DOCKER_IMAGE_NAME:
+        description: "Name for the published docker image, defaults to newrelic/newrelic-${{ inputs.INITCONTAINER_LANGUAGE }}-init"
+        required: false
+        type: string
+        default: "newrelic/newrelic-${{ inputs.INITCONTAINER_LANGUAGE }}-init"
       DOCKER_IMAGE_TAG_SUFFIX:
         description: "Suffix to append to all version tags. (string with no preceding -)"
         required: false
