@@ -18,7 +18,7 @@ on:
         type: string
         default: ""
       DOCKER_IMAGE_NAME:
-        description: "Name for the published docker image, defaults to newrelic/newrelic-${{ inputs.INITCONTAINER_LANGUAGE }}-init"
+        description: "Name for the published docker image, defaults to newrelic/newrelic-<INITCONTAINER_LANGUAGE>-init"
         required: false
         type: string
         default: ""
