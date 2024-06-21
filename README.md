@@ -1,7 +1,7 @@
 <a href="https://opensource.newrelic.com/oss-category/#community-project"><picture><source media="(prefers-color-scheme: dark)" srcset="https://github.com/newrelic/opensource-website/raw/main/src/images/categories/dark/Community_Project.png"><source media="(prefers-color-scheme: light)" srcset="https://github.com/newrelic/opensource-website/raw/main/src/images/categories/Community_Project.png"><img alt="New Relic Open Source community project banner." src="https://github.com/newrelic/opensource-website/raw/main/src/images/categories/Community_Project.png"></picture></a>
 
 # New Relic Kubernetes Agent Operator Init Container Releases
-This repository contains init containers and GHA workflows to automatically release new Kubernetes Agent Operator agent init containers when a new version of a language agent becomes available.
+This repository contains init containers and GHA workflows for automatically releasing new Kubernetes Agent Operator agent init containers when a new version of a language agent becomes available.
 
 ## Usage
 
