@@ -21,11 +21,11 @@ Agent versions at New Relic either follow [semver](https://semver.org/) (eg. `1.
 
 In this example, once the tag `9.10.0.0` is published it will never be replaced. If a rebuilt container for agent version `v9.10.0` is released, it will be published as `9.10.0.1`, incrementing the init container build number.
 
-### NodeJS
+### Node.js
 
-Each NodeJS container is only compatible with a single major version of NodeJS. As a result, all NodeJS agent versions are published as separate images with a NodeJS version suffix. The `latest` tag and any tags without this suffix point to the latest supported major version of NodeJS.
+Each Node.js container is only compatible with a single major version of Node.js. As a result, all Node.js agent versions are published as separate images with a Node.js version suffix. The `latest` tag and any tags without this suffix point to the latest supported major version of Node.js. For example:
 
-| Image Tag         | NodeJS Major Version   |
+| Image Tag         | Node.js Major Version   |
 |-------------------|------------------------|
 | latest            | Latest Supported  (20) |
 | 11.19.0           | Latest Supported  (20) |
