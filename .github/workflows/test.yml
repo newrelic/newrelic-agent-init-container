@@ -80,6 +80,8 @@ jobs:
 
       - name: Run e2e-test
         uses: newrelic/newrelic-integration-e2e-action@a97ced80a4841c8c6261d1f9dca6706b1d89acb1  # 1.11.0
+        # Skip e2e tests for dependabot PRs since dependabot can't access secrets
+        if: github.actor != 'dependabot[bot]' 
         with:
           retry_seconds: 60
           retry_attempts: 5
