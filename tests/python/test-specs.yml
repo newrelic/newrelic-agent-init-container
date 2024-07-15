@@ -5,7 +5,7 @@ scenarios:
     before:
       - helm install test-python ./chart/ --set=scenarioTag="${SCENARIO_TAG}" -n default
       - sleep 5
-      - kubectl wait --for=condition=Ready -n default --all pods
+      - kubectl wait --for=condition=Ready -n default --all pods --timeout=2m
       - curl --fail-with-body $(minikube service test-app-python-service --url -n default)
     tests:
       nrqls:
