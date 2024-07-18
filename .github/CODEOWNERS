@@ -1,10 +1,10 @@
 # Default permissions for all files not matched below
-* @newrelic/dotnet-code-reviewers @newrelic/go-agent @newrelic/java-agent @newrelic/node-js-agent @newrelic/php-agent @newrelic/python @newrelic/ruby-agent
+* @newrelic/dotnet @newrelic/go-agent @newrelic/java-agent @newrelic/node-js-agent @newrelic/php-agent @newrelic/python @newrelic/ruby-agent
 
 # Team based ownership
-/.github/workflows/dotnet.yml @newrelic/dotnet-code-reviewers
-/src/dotnet/ @newrelic/dotnet-code-reviewers
-/tests/dotnet/ @newrelic/dotnet-code-reviewers
+/.github/workflows/dotnet.yml @newrelic/dotnet
+/src/dotnet/ @newrelic/dotnet
+/tests/dotnet/ @newrelic/dotnet
 
 /.github/workflows/go.yml @newrelic/go-agent
 /src/go/ @newrelic/go-agent
