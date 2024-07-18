@@ -68,15 +68,17 @@ jobs:
       - name: Build init container
         run: |
           BUILD_ARGS=${{ inputs.INITCONTAINER_BUILD_ARGS }}
-          if [[ -n "${BUILD_ARGS}" ]]; then BUILD_ARGS="--build-opt=build-arg=${BUILD_ARGS}"; fi
-          if [[ -n "${{ env.AGENT_VERSION }}" ]]; then BUILD_ARGS="${BUILD_ARGS:-} --build-opt=build-arg=AGENT_VERSION=${{ env.AGENT_VERSION }}"; fi
-          minikube image build -t e2e/newrelic-${{ inputs.INITCONTAINER_LANGUAGE }}-init:e2e src/${{ inputs.INITCONTAINER_LANGUAGE }}/ ${BUILD_ARGS}
+          if [[ -n "${BUILD_ARGS}" ]]; then BUILD_ARGS="--build-arg=${BUILD_ARGS}"; fi
+          if [[ -n "${{ env.AGENT_VERSION }}" ]]; then BUILD_ARGS="${BUILD_ARGS:-} --build-arg=AGENT_VERSION=${{ env.AGENT_VERSION }}"; fi
+          eval "$(minikube docker-env)"
+          docker build -t e2e/newrelic-${{ inputs.INITCONTAINER_LANGUAGE }}-init:e2e src/${{ inputs.INITCONTAINER_LANGUAGE }}/ ${BUILD_ARGS}
 
       - name: Build test app container
         run: |
           BUILD_ARGS=${{ inputs.TEST_APP_BUILD_ARGS }}
-          if [[ -n "${BUILD_ARGS}" ]]; then BUILD_ARGS="--build-opt=build-arg=${BUILD_ARGS}"; fi
-          minikube image build -t e2e/test-app-${{ inputs.INITCONTAINER_LANGUAGE }}:e2e tests/${{ inputs.INITCONTAINER_LANGUAGE }}/ ${BUILD_ARGS}
+          if [[ -n "${BUILD_ARGS}" ]]; then BUILD_ARGS="--build-arg=${BUILD_ARGS}"; fi
+          eval "$(minikube docker-env)"
+          docker build -t e2e/test-app-${{ inputs.INITCONTAINER_LANGUAGE }}:e2e tests/${{ inputs.INITCONTAINER_LANGUAGE }}/ ${BUILD_ARGS}
 
       - name: Run e2e-test
         uses: newrelic/newrelic-integration-e2e-action@a97ced80a4841c8c6261d1f9dca6706b1d89acb1  # 1.11.0

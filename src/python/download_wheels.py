@@ -50,6 +50,7 @@ def main():
 
         if AGENT_VERSION:
             # Grab the supplied release version
+            releases = {release["version"]: release for release in releases}
             release = releases[AGENT_VERSION]
         else:
             # Grab latest release version
