@@ -1,5 +1,5 @@
-ARG PYTHON_VERSION=3.12
-FROM python:$PYTHON_VERSION
+ARG ${RUNTIME_VERSION}=3.12
+FROM python:${RUNTIME_VERSION}
 
 RUN pip install flask==3.0.3 gunicorn==22.0.0
 
