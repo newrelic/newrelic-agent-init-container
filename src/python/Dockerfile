@@ -1,5 +1,5 @@
-ARG ${RUNTIME_VERSION}=3.12-alpine@sha256:0bd77ae937dce9037e136ab35f41eaf9e012cfd741fc3c8dd4b3e2b63499f12c
-FROM python:${RUNTIME_VERSION} AS build
+ARG RUNTIME_VERSION=3.12-alpine@sha256:0bd77ae937dce9037e136ab35f41eaf9e012cfd741fc3c8dd4b3e2b63499f12c
+FROM python:$RUNTIME_VERSION AS build
 
 WORKDIR /operator-build
 
