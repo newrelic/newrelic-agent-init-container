@@ -70,12 +70,14 @@ license_key_secret:
 # Build local initcontainer image
 .PHONY: build-initcontainer
 build-initcontainer: check-language-arg
-	minikube image build -t e2e/newrelic-${INITCONTAINER_LANGUAGE}-init:e2e ${REPO_ROOT}/src/${INITCONTAINER_LANGUAGE}/
+	eval $$(minikube docker-env --shell=bash) && \
+		docker build -t e2e/newrelic-${INITCONTAINER_LANGUAGE}-init:e2e ${REPO_ROOT}/src/${INITCONTAINER_LANGUAGE}/
 
 # Build local test app image
 .PHONY: build-testapp
 build-testapp: check-language-arg
-	minikube image build -t e2e/test-app-${INITCONTAINER_LANGUAGE}:e2e ${REPO_ROOT}/tests/${INITCONTAINER_LANGUAGE}/
+	eval $$(minikube docker-env --shell=bash) && \
+		docker build -t e2e/test-app-${INITCONTAINER_LANGUAGE}:e2e ${REPO_ROOT}/tests/${INITCONTAINER_LANGUAGE}/
 
 # Deploy and open test app in browser
 .PHONY: test
