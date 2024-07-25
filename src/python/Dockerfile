@@ -1,5 +1,5 @@
-# Build Python Instrumentation Files
-FROM python:3.10-alpine@sha256:7e73eab259b777c76ad93e42180d468f326eff315c212bc80d4dffdf4695163a AS build
+ARG RUNTIME_VERSION=3.12-alpine@sha256:0bd77ae937dce9037e136ab35f41eaf9e012cfd741fc3c8dd4b3e2b63499f12c
+FROM python:$RUNTIME_VERSION AS build
 
 WORKDIR /operator-build
 

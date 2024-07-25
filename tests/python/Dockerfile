@@ -1,8 +1,12 @@
-ARG PYTHON_VERSION=3.12
-FROM python:$PYTHON_VERSION
+ARG RUNTIME_VERSION=3.7
+FROM python:$RUNTIME_VERSION
 
-RUN pip install flask==3.0.3 gunicorn==22.0.0
+# Install dependencies
+RUN pip install flask gunicorn
 
+# Remove pip to ensure our vendored version is working
+RUN rm -rf /usr/local/lib/**/site-packages/pip
+
+# Add test app
 COPY main.py .
-
 CMD ["gunicorn", "main:app", "-b", "0.0.0.0:8000", "--workers=1"]
