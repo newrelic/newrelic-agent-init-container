@@ -48,7 +48,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [16, 18, 20, 22]
+        node-version: [18, 20, 22]
     with:
       INITCONTAINER_LANGUAGE: nodejs
       INITCONTAINER_BUILD_ARGS: RUNTIME_VERSION=${{ matrix.node-version }}
@@ -62,7 +62,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [16, 18, 20, 22]
+        node-version: [18, 20, 22]
     with:
       INITCONTAINER_LANGUAGE: nodejs
       DOCKER_IMAGE_NAME: newrelic/newrelic-node-init
