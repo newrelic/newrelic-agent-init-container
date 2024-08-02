@@ -53,11 +53,11 @@ jobs:
         arch: [amd64, arm64]
         exclude:
           - arch: arm64
-            php: '7.2'
+            php-version: '7.2'
           - arch: arm64
-            php: '7.3'
+            php-version: '7.3'
           - arch: arm64
-            php: '7.4'
+            php-version: '7.4'
     with:
       INITCONTAINER_LANGUAGE: php
       INITCONTAINER_BUILD_ARGS: ${{ matrix.libc }}
