@@ -1,0 +1,15 @@
+description: End-to-end tests for php initcontainer
+custom_test_key: tags.testKey
+scenarios:
+  - description: This scenario will verify that a transaction is reported by the test app after a curl request
+    before:
+      - helm install test-php ./chart/ --set=scenarioTag="${SCENARIO_TAG}" --set=phpVersion="${PHP_VERSION}" -n default
+      - sleep 5
+      - kubectl wait --for=condition=Ready -n default --all pods --timeout=2m
+      - curl --fail-with-body $(minikube service test-app-php-service --url -n default)
+    tests:
+      nrqls:
+        - query: SELECT latest(duration) AS duration FROM Transaction WHERE appName = 'k8s-e2e-test-app-php'
+          expected_results:
+            - key: "duration"
+              lowerBoundedValue: 0.0
