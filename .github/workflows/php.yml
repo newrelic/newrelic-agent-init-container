@@ -62,20 +62,3 @@ jobs:
       INITCONTAINER_LANGUAGE: php
       INITCONTAINER_BUILD_ARGS: ${{ matrix.libc }}
       TEST_APP_BUILD_ARGS: ${{ matrix.php-version }}
-
-  publish:
-    if: github.event_name == 'release' && endsWith(github.ref, '_php') # Skip everything if this isn't PHP
-    needs: test
-    uses: ./.github/workflows/publish.yml
-    secrets: inherit
-    strategy:
-      fail-fast: false
-      matrix:
-        node-version: [18, 20, 22]
-    with:
-      INITCONTAINER_LANGUAGE: php
-      DOCKER_IMAGE_NAME: newrelic/newrelic-node-init
-      DOCKER_IMAGE_TAG_SUFFIX: nodejs${{ matrix.node-version }}x
-      DOCKER_IMAGE_TAG_IS_DEFAULT_SUFFIX: ${{ matrix.node-version == 22 }}
-      BUILD_ARGS: |
-        RUNTIME_VERSION=${{ matrix.node-version }}
