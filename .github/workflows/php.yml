@@ -62,3 +62,4 @@ jobs:
       INITCONTAINER_LANGUAGE: php
       INITCONTAINER_BUILD_ARGS: ${{ matrix.libc }}
       TEST_APP_BUILD_ARGS: ${{ matrix.php-version }}
+      TEST_APP_ARCH: ${{ matrix.arch }}
