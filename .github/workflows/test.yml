@@ -119,10 +119,9 @@ jobs:
           docker build -t e2e/test-app-${{ inputs.INITCONTAINER_LANGUAGE }}:e2e tests/${{ inputs.INITCONTAINER_LANGUAGE }}/${{ inputs.INITCONTAINER_BUILD_ARGS }}/ ${BUILD_ARGS} --platform=linux/${{ inputs.TEST_APP_ARCH }}
 
       - name: Run e2e-test
-        if: inputs.INITCONTAINER_LANGUAGE != 'php'
         uses: newrelic/newrelic-integration-e2e-action@a97ced80a4841c8c6261d1f9dca6706b1d89acb1  # 1.11.0
         # Skip e2e tests for dependabot PRs since dependabot can't access secrets
-        if: github.actor != 'dependabot[bot]' 
+        if: inputs.INITCONTAINER_LANGUAGE != 'php' && github.actor != 'dependabot[bot]'
         with:
           retry_seconds: 60
           retry_attempts: 5
@@ -133,10 +132,9 @@ jobs:
           license_key: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
 
       - name: Run e2e-test
-        if: inputs.INITCONTAINER_LANGUAGE == 'php'
-        uses: newrelic/newrelic-integration-e2e-action@a97ced80a4841c8c6261d1f9dca6706b1d89acb1  # 1.11.0
         # Skip e2e tests for dependabot PRs since dependabot can't access secrets
-        if: github.actor != 'dependabot[bot]' 
+        if: inputs.INITCONTAINER_LANGUAGE == 'php' && github.actor != 'dependabot[bot]' 
+        uses: newrelic/newrelic-integration-e2e-action@a97ced80a4841c8c6261d1f9dca6706b1d89acb1  # 1.11.0
         env:
           PHP_VERSION: ${{ inputs.TEST_APP_BUILD_ARGS }}
         with:
