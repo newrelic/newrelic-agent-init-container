@@ -12,7 +12,7 @@ elif [[ ! $libc =~ ^(musl|gnu)$ ]]; then
 fi
 
 if [ -z "$version" ]; then
-  latest=$(curl https://download.newrelic.com/php_agent/release/ | grep newrelic-php5 | cut -d '-' -f 3 | head -n 1)
+  latest=$(wget -c https://download.newrelic.com/php_agent/release/ -O - | grep newrelic-php5 | cut -d '-' -f 3 | head -n 1)
   url="https://download.newrelic.com/php_agent/release/newrelic-php5-${latest}-linux"
 else
   url="https://download.newrelic.com/php_agent/archive/${version}/newrelic-php5-${version}-linux"
