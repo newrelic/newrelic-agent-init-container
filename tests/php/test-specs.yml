@@ -3,7 +3,7 @@ custom_test_key: tags.testKey
 scenarios:
   - description: This scenario will verify that a transaction is reported by the test app after a curl request
     before:
-      - helm install test-php ./chart/ --set=scenarioTag="${SCENARIO_TAG}" --set=phpVersion="${PHP_VERSION}" -n default
+      - helm install test-php ./chart/ --set=scenarioTag="${SCENARIO_TAG}" ${TEST_APP_HELM_CHART_ARGS} -n default
       - sleep 5
       - kubectl wait --for=condition=Ready -n default --all pods --timeout=2m
       - curl --fail-with-body $(minikube service test-app-php-service --url -n default)
