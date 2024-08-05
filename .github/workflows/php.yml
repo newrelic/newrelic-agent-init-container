@@ -49,15 +49,15 @@ jobs:
         libc: [gnu, musl]
         arch: [linux/amd64, linux/arm64]
         exclude:
-          - arch: arm64
+          - arch: linux/arm64
             php-version: '7.2'
-          - arch: arm64
+          - arch: linux/arm64
             php-version: '7.3'
-          - arch: arm64
+          - arch: linux/arm64
             php-version: '7.4'
     with:
-      ARCHITECTURE: ${{ matrix.arch }}
       INITCONTAINER_LANGUAGE: php
+      ARCHITECTURE: ${{ matrix.arch }}
       INITCONTAINER_BUILD_ARGS: LIBC=${{ matrix.libc }}
       TEST_APP_BUILD_ARGS: PHP_IMAGE_TAG=${{ matrix.php-version }}-${{ matrix.libc == 'musl' && 'fpm-alpine' || 'apache' }}
       TEST_APP_HELM_CHART_ARGS: --set=phpVersion=${{ matrix.php-version }}
@@ -70,18 +70,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: ['7.2', '7.3', '7.4', '8.0', '8.1', '8.2', '8.3']
         libc: [gnu, musl]
-        arch: [linux/amd64, linux/arm64]
-        exclude:
-          - arch: arm64
-            php-version: '7.2'
-          - arch: arm64
-            php-version: '7.3'
-          - arch: arm64
-            php-version: '7.4'
     with:
       INITCONTAINER_LANGUAGE: php
+      ARCHITECTURE: linux/amd64,linux/arm64
       DOCKER_IMAGE_NAME: newrelic/newrelic-php-init
       DOCKER_IMAGE_TAG_SUFFIX: ${{ matrix.arch == 'gnu' && 'glibc' || 'musl' }}
       DOCKER_IMAGE_TAG_IS_DEFAULT_SUFFIX: ${{ matrix.arch == 'gnu' }}
