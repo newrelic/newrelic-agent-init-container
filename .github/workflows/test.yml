@@ -6,20 +6,24 @@ name: Init Container Test
 on:
   workflow_call:
     inputs:
-      INITCONTAINER_LANGUAGE:
-        required: true
-        type: string
       K8S_OPERATOR_IMAGE_TAG:
         required: false
         type: string
         default: edge
+      ARCHITECTURE:
+        required: false
+        type: string
+        default: linux/amd64
+      INITCONTAINER_LANGUAGE:
+        required: true
+        type: string
       INITCONTAINER_BUILD_ARGS:
         required: false
         type: string
       TEST_APP_BUILD_ARGS:
         required: false
         type: string
-      TEST_APP_ARCH:
+      TEST_APP_HELM_CHART_ARGS:
         required: false
         type: string
 
@@ -37,26 +41,18 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Enable arm64 emulation
+        if: inputs.ARCHITECTURE != 'linux/amd64'
+        uses: docker/setup-qemu-action@49b3bc8e6bdd4a60e6116a5414239cba5943d3cf # 3.2.0
+        with:
+          image: tonistiigi/binfmt:qemu-v6.2.0
+          platforms: inputs.ARCHITECTURE
+
       - name: Extract Agent Version from Release Tag
         id: version
         if: github.event_name == 'release'
         run: |
           echo AGENT_VERSION=$(echo "${{ github.ref_name }}" | sed -e "s/^v//g" -e "s/_[a-zA-Z]*//g" -e "s/\.[0-9]*$//g") | tee -a ${GITHUB_ENV}
-
-      - name: Build Image Tag
-        id: tag
-        if: inputs.INITCONTAINER_LANGUAGE == 'php'
-        run: |
-          IMAGE_TAG="e2e"
-          if [[ "${{ inputs.INITCONTAINER_BUILD_ARGS }}" == 'musl' ]]; then IMAGE_TAG="${IMAGE_TAG}-musl"; fi
-          echo TAG=$(echo ${IMAGE_TAG}) | tee -a ${GITHUB_ENV}
-
-      - name: Enable arm64 emulation
-        if:  inputs.INITCONTAINER_LANGUAGE == 'php' && inputs.TEST_APP_ARCH == 'arm64'
-        uses: docker/setup-qemu-action@49b3bc8e6bdd4a60e6116a5414239cba5943d3cf # 3.2.0
-        with:
-          image: tonistiigi/binfmt:qemu-v6.2.0
-          platforms: arm64
 
       - name: Set up Docker Buildx
         id: buildx
@@ -84,64 +80,37 @@ jobs:
           kubectl wait --for=condition=Ready -n default --all pods
 
       - name: Build init container
-        if: inputs.INITCONTAINER_LANGUAGE != 'php'
         run: |
           BUILD_ARGS=${{ inputs.INITCONTAINER_BUILD_ARGS }}
           if [[ -n "${BUILD_ARGS}" ]]; then BUILD_ARGS="--build-arg=${BUILD_ARGS}"; fi
           if [[ -n "${{ env.AGENT_VERSION }}" ]]; then BUILD_ARGS="${BUILD_ARGS:-} --build-arg=AGENT_VERSION=${{ env.AGENT_VERSION }}"; fi
           eval "$(minikube docker-env)"
-          docker build -t e2e/newrelic-${{ inputs.INITCONTAINER_LANGUAGE }}-init:e2e src/${{ inputs.INITCONTAINER_LANGUAGE }}/ ${BUILD_ARGS}
-
-      - name: Build PHP init container
-        if: inputs.INITCONTAINER_LANGUAGE == 'php'
-        run: |
-          BUILD_ARGS=${{ inputs.INITCONTAINER_BUILD_ARGS }}
-          TAG="e2e"
-          if [[ -n "${BUILD_ARGS}" ]]; then BUILD_ARGS="--build-arg=LIBC=${BUILD_ARGS}"; fi
-          if [[ -n "${{ env.AGENT_VERSION }}" ]]; then BUILD_ARGS="${BUILD_ARGS:-} --build-arg=AGENT_VERSION=${{ env.AGENT_VERSION }}"; fi
-          eval "$(minikube docker-env)"
-          docker build -t e2e/newrelic-${{ inputs.INITCONTAINER_LANGUAGE }}-init:${{ env.TAG }} src/${{ inputs.INITCONTAINER_LANGUAGE }}/ ${BUILD_ARGS}
+          docker build \
+            -t e2e/newrelic-${{ inputs.INITCONTAINER_LANGUAGE }}-init:e2e \
+            src/${{ inputs.INITCONTAINER_LANGUAGE }}/ \
+            --platform=${{ inputs.ARCHITECTURE }} \
+            ${BUILD_ARGS}
 
       - name: Build test app container
-        if: inputs.INITCONTAINER_LANGUAGE != 'php'
         run: |
           BUILD_ARGS=${{ inputs.TEST_APP_BUILD_ARGS }}
           if [[ -n "${BUILD_ARGS}" ]]; then BUILD_ARGS="--build-arg=${BUILD_ARGS}"; fi
           eval "$(minikube docker-env)"
-          docker build -t e2e/test-app-${{ inputs.INITCONTAINER_LANGUAGE }}:e2e tests/${{ inputs.INITCONTAINER_LANGUAGE }}/ ${BUILD_ARGS}
-
-      - name: Build PHP test app container
-        if: inputs.INITCONTAINER_LANGUAGE == 'php'
-        run: |
-          BUILD_ARGS=${{ inputs.TEST_APP_BUILD_ARGS }}
-          if [[ -n "${BUILD_ARGS}" ]]; then BUILD_ARGS="--build-arg=PHPVER=${BUILD_ARGS}"; fi
-          eval "$(minikube docker-env)"
-          docker build -t e2e/test-app-${{ inputs.INITCONTAINER_LANGUAGE }}:e2e tests/${{ inputs.INITCONTAINER_LANGUAGE }}/${{ inputs.INITCONTAINER_BUILD_ARGS }}/ ${BUILD_ARGS} --platform=linux/${{ inputs.TEST_APP_ARCH }}
+          docker build \
+            -t e2e/test-app-${{ inputs.INITCONTAINER_LANGUAGE }}:e2e \
+            tests/${{ inputs.INITCONTAINER_LANGUAGE }}/ \
+            --platform=${{ inputs.ARCHITECTURE }} \
+            ${BUILD_ARGS}
 
       - name: Run e2e-test
         uses: newrelic/newrelic-integration-e2e-action@a97ced80a4841c8c6261d1f9dca6706b1d89acb1  # 1.11.0
         # Skip e2e tests for dependabot PRs since dependabot can't access secrets
-        if: inputs.INITCONTAINER_LANGUAGE != 'php' && github.actor != 'dependabot[bot]'
+        if: github.actor != 'dependabot[bot]'
         with:
           retry_seconds: 60
           retry_attempts: 5
           agent_enabled: false
           spec_path: tests/${{ inputs.INITCONTAINER_LANGUAGE }}/test-specs.yml
-          account_id: ${{ secrets.NEW_RELIC_ACCOUNT_ID }}
-          api_key: ${{ secrets.NEW_RELIC_API_KEY }}
-          license_key: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
-
-      - name: Run PHP e2e-test
-        # Skip e2e tests for dependabot PRs since dependabot can't access secrets
-        if: inputs.INITCONTAINER_LANGUAGE == 'php' && github.actor != 'dependabot[bot]' 
-        uses: newrelic/newrelic-integration-e2e-action@a97ced80a4841c8c6261d1f9dca6706b1d89acb1  # 1.11.0
-        env:
-          PHP_VERSION: ${{ inputs.TEST_APP_BUILD_ARGS }}
-        with:
-          retry_seconds: 60
-          retry_attempts: 5
-          agent_enabled: false
-          spec_path: tests/${{ inputs.INITCONTAINER_LANGUAGE }}/${{ inputs.INITCONTAINER_BUILD_ARGS }}/test-specs.yml
           account_id: ${{ secrets.NEW_RELIC_ACCOUNT_ID }}
           api_key: ${{ secrets.NEW_RELIC_API_KEY }}
           license_key: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
