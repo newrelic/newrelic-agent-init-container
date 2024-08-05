@@ -46,7 +46,7 @@ jobs:
         uses: docker/setup-qemu-action@49b3bc8e6bdd4a60e6116a5414239cba5943d3cf # 3.2.0
         with:
           image: tonistiigi/binfmt:qemu-v6.2.0
-          platforms: inputs.ARCHITECTURE
+          platforms: ${{ inputs.ARCHITECTURE }}
 
       - name: Extract Agent Version from Release Tag
         id: version
