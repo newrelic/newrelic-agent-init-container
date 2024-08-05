@@ -1,0 +1,11 @@
+---
+apiVersion: newrelic.com/v1alpha1
+kind: Instrumentation
+metadata:
+  labels:
+    app.kubernetes.io/name: instrumentation
+    app.kubernetes.io/created-by: newrelic-agent-operator
+  name: newrelic-instrumentation
+spec:
+  php:
+    image: e2e/newrelic-php-init:e2e
