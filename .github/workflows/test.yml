@@ -131,7 +131,7 @@ jobs:
           api_key: ${{ secrets.NEW_RELIC_API_KEY }}
           license_key: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
 
-      - name: Run e2e-test
+      - name: Run PHP e2e-test
         # Skip e2e tests for dependabot PRs since dependabot can't access secrets
         if: inputs.INITCONTAINER_LANGUAGE == 'php' && github.actor != 'dependabot[bot]' 
         uses: newrelic/newrelic-integration-e2e-action@a97ced80a4841c8c6261d1f9dca6706b1d89acb1  # 1.11.0
