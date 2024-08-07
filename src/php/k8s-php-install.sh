@@ -11,7 +11,7 @@ log() {
   echo "${timestamp} : ${msg}" >>${INSTALL_LOG}
 }
 
-if [ -z ${ZEND_API_NO} ]; then
+if [ -z "${ZEND_API_NO}" ]; then
   log "Missing Zend api number. Exiting."
   exit 1
 fi
@@ -47,7 +47,7 @@ fi
 
 # exit if invalid php x arch
 if [ "${arch}" = "aarch64" ]; then
-  if [ ${ZEND_API_NO} = "20170218" ] || [ ${ZEND_API_NO} = "20180731" ] || [ ${ZEND_API_NO} = "20190902" ]; then
+  if [ "${ZEND_API_NO}" = "20170218" ] || [ "${ZEND_API_NO}" = "20180731" ] || [ "${ZEND_API_NO}" = "20190902" ]; then
     log "Invalid arch x php detected. ARM64 is only supported for PHP 8.0+. The install will now exit."
     exit 1
   fi
@@ -56,23 +56,23 @@ fi
 AGENT_SO=${AGENT_FILEPATH}/${arch}/newrelic-${ZEND_API_NO}.so
 
 # verify existence of agent .so
-if [ ! -f ${AGENT_SO} ]; then
+if [ ! -f "${AGENT_SO}" ]; then
   log "Agent binary not found (${AGENT_SO}). Exiting."
   exit 1
 fi
 
 # copy the .so to the expected location
-cp ${AGENT_SO} /newrelic-instrumentation/php-agent/ext/newrelic.so
+cp "${AGENT_SO}" /newrelic-instrumentation/php-agent/ext/newrelic.so
 
 DAEMON_BINARY=${DAEMON_FILEPATH}/newrelic-daemon.${arch}
 
 # verify existence of the daemon binary
-if [ ! -f ${DAEMON_BINARY} ]; then
+if [ ! -f "${DAEMON_BINARY}" ]; then
   log "Daemon binary not found (${DAEMON_BINARY}). Exiting."
   exit 1
 fi
 
 # copy the binary to the expected location
-cp ${DAEMON_BINARY} /newrelic-instrumentation/php-agent/bin/newrelic-daemon
+cp "${DAEMON_BINARY}" /newrelic-instrumentation/php-agent/bin/newrelic-daemon
 
 log "Installation complete."
