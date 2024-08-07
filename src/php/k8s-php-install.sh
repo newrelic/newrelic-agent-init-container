@@ -25,7 +25,6 @@ arch=$( (uname -m) 2>/dev/null) || arch="unknown"
 case "${arch}" in
   aarch64 | arm64) arch=aarch64 ;;
   x86_64 | amd64) arch=x64 ;;
-  *) arch=invalid ;;
 esac
 
 # exit if arch is unsupported
@@ -33,7 +32,7 @@ if [ "${arch}" != "x64" ] && [ "${arch}" != "aarch64" ]; then
   msg=$(
     cat <<EOF
 
-An unsupported architecture detected.
+An unsupported architecture detected: "${arch}"
 Please visit:
   https://docs.newrelic.com/docs/apm/agents/php-agent/getting-started/php-agent-compatibility-requirements/
 to view compatibilty requirements for the the New Relic PHP agent.
@@ -58,7 +57,7 @@ AGENT_SO=${AGENT_FILEPATH}/${arch}/newrelic-${ZEND_API_NO}.so
 
 # verify existence of agent .so
 if [ ! -f ${AGENT_SO} ]; then
-  log "Agent binary not found. Exiting."
+  log "Agent binary not found (${AGENT_SO}). Exiting."
   exit 1
 fi
 
@@ -69,7 +68,7 @@ DAEMON_BINARY=${DAEMON_FILEPATH}/newrelic-daemon.${arch}
 
 # verify existence of the daemon binary
 if [ ! -f ${DAEMON_BINARY} ]; then
-  log "Daemon binary not found. Exiting."
+  log "Daemon binary not found (${DAEMON_BINARY}). Exiting."
   exit 1
 fi
 
