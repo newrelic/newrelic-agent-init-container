@@ -24,7 +24,7 @@ log "Installing New Relic PHP Agent for the K8S Agent Operator"
 arch=$( (uname -m) 2>/dev/null) || arch="unknown"
 case "${arch}" in
   aarch64 | arm64) arch=aarch64 ;;
-  *64* | *amd*) arch=x64 ;;
+  x86_64 | amd64) arch=x64 ;;
   *) arch=invalid ;;
 esac
 
