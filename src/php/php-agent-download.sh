@@ -7,7 +7,7 @@ if [ -z "$libc" ]; then
   echo "'libc' argument not supplied. Defaulting to 'gnu'"
   libc="gnu"
 elif [[ ! $libc =~ ^(musl|gnu)$ ]]; then
-  echo "error: invalid 'libc' argument provided. Exiting."
+  echo "error: invalid 'libc' argument provided: ${libc}. Exiting."
   exit 1
 fi
 
