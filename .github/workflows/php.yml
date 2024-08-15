@@ -34,9 +34,6 @@ on:
     types:
       - published
 
-env:
-  INITCONTAINER_LANGUAGE: php
-
 # Declare default permissions as read only.
 permissions: read-all
 
@@ -50,16 +47,34 @@ jobs:
       matrix:
         php-version: ['7.2', '7.3', '7.4', '8.0', '8.1', '8.2', '8.3']
         libc: [gnu, musl]
-        arch: [amd64, arm64]
+        arch: [linux/amd64, linux/arm64]
         exclude:
-          - arch: arm64
+          - arch: linux/arm64
             php-version: '7.2'
-          - arch: arm64
+          - arch: linux/arm64
             php-version: '7.3'
-          - arch: arm64
+          - arch: linux/arm64
             php-version: '7.4'
     with:
       INITCONTAINER_LANGUAGE: php
-      INITCONTAINER_BUILD_ARGS: ${{ matrix.libc }}
-      TEST_APP_BUILD_ARGS: ${{ matrix.php-version }}
-      TEST_APP_ARCH: ${{ matrix.arch }}
+      ARCHITECTURE: ${{ matrix.arch }}
+      INITCONTAINER_BUILD_ARGS: LIBC=${{ matrix.libc }}
+      TEST_APP_BUILD_ARGS: PHP_IMAGE_TAG=${{ matrix.php-version }}-${{ matrix.libc == 'musl' && 'fpm-alpine' || 'apache' }}
+      TEST_APP_HELM_CHART_ARGS: --set=phpVersion=${{ matrix.php-version }}
+
+  publish:
+    if: github.event_name == 'release' && endsWith(github.ref, '_php') # Skip everything if this isn't PHP
+    needs: test
+    uses: ./.github/workflows/publish.yml
+    secrets: inherit
+    strategy:
+      fail-fast: false
+      matrix:
+        libc: [gnu, musl]
+    with:
+      INITCONTAINER_LANGUAGE: php
+      ARCHITECTURE: linux/amd64,linux/arm64
+      DOCKER_IMAGE_NAME: newrelic/newrelic-php-init
+      DOCKER_IMAGE_TAG_SUFFIX: ${{ matrix.arch == 'gnu' && 'glibc' || 'musl' }}
+      DOCKER_IMAGE_TAG_IS_DEFAULT_SUFFIX: ${{ matrix.arch == 'gnu' }}
+      BUILD_ARGS: LIBC=${{ matrix.libc }}
