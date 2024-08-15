@@ -59,7 +59,7 @@ jobs:
       INITCONTAINER_LANGUAGE: php
       ARCHITECTURE: ${{ matrix.arch }}
       INITCONTAINER_BUILD_ARGS: LIBC=${{ matrix.libc }}
-      TEST_APP_BUILD_ARGS: PHP_IMAGE_TAG=${{ matrix.php-version }}-${{ matrix.libc == 'musl' && 'fpm-alpine' || 'apache' }}
+      TEST_APP_BUILD_ARGS: PHP_IMAGE_TAG=${{ matrix.php-version }}-${{ matrix.libc == 'musl' && 'fpm-alpine' || 'fpm' }}
       TEST_APP_HELM_CHART_ARGS: --set=phpVersion=${{ matrix.php-version }}
 
   publish:
