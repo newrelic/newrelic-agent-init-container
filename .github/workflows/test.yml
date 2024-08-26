@@ -81,7 +81,7 @@ jobs:
           docker build -t e2e/test-app-${{ inputs.INITCONTAINER_LANGUAGE }}:e2e tests/${{ inputs.INITCONTAINER_LANGUAGE }}/ ${BUILD_ARGS}
 
       - name: Run e2e-test
-        uses: newrelic/newrelic-integration-e2e-action@a97ced80a4841c8c6261d1f9dca6706b1d89acb1  # 1.11.0
+        uses: newrelic/newrelic-integration-e2e-action@fd53fc95e287dcd7b5bd86a4a25d653aadf407d0  # 1.11.1
         # Skip e2e tests for dependabot PRs since dependabot can't access secrets
         if: github.actor != 'dependabot[bot]' 
         with:
