@@ -14,8 +14,8 @@ COPY download_wheels.py .
 RUN python ./download_wheels.py
 
 # Install sdist without extensions to set up the directory
-ENV NEW_RELIC_EXTENSIONS False
-ENV WRAPT_DISABLE_EXTENSIONS True
+ENV NEW_RELIC_EXTENSIONS=False
+ENV WRAPT_DISABLE_EXTENSIONS=True
 RUN pip install ./workspace/newrelic.tar.gz --target=./workspace/newrelic && \
     rm ./workspace/newrelic.tar.gz
 
