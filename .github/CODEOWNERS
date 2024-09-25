@@ -1,22 +1,22 @@
 # Default permissions for all files not matched below
-* @newrelic/dotnet @newrelic/go-agent @newrelic/java-agent @newrelic/node-js-agent @newrelic/php-agent @newrelic/python @newrelic/ruby-agent
+* @newrelic/dotnet @newrelic/go @newrelic/java @newrelic/node @newrelic/php-agent @newrelic/python @newrelic/ruby
 
 # Team based ownership
 /.github/workflows/dotnet.yml @newrelic/dotnet
 /src/dotnet/ @newrelic/dotnet
 /tests/dotnet/ @newrelic/dotnet
 
-/.github/workflows/go.yml @newrelic/go-agent
-/src/go/ @newrelic/go-agent
-/tests/go/ @newrelic/go-agent
+/.github/workflows/go.yml @newrelic/go
+/src/go/ @newrelic/go
+/tests/go/ @newrelic/go
 
-/.github/workflows/java.yml @newrelic/java-agent
-/src/java/ @newrelic/java-agent
-/tests/java/ @newrelic/java-agent
+/.github/workflows/java.yml @newrelic/java
+/src/java/ @newrelic/java
+/tests/java/ @newrelic/java
 
-/.github/workflows/nodejs.yml @newrelic/node-js-agent
-/src/nodejs/ @newrelic/node-js-agent
-/tests/nodejs/ @newrelic/node-js-agent
+/.github/workflows/nodejs.yml @newrelic/node
+/src/nodejs/ @newrelic/node
+/tests/nodejs/ @newrelic/node
 
 /.github/workflows/php.yml @newrelic/php-agent
 /src/php/ @newrelic/php-agent
@@ -26,6 +26,6 @@
 /src/python/ @newrelic/python
 /tests/python/ @newrelic/python
 
-/.github/workflows/ruby.yml @newrelic/ruby-agent
-/src/ruby/ @newrelic/ruby-agent
-/tests/ruby/ @newrelic/ruby-agent
+/.github/workflows/ruby.yml @newrelic/ruby
+/src/ruby/ @newrelic/ruby
+/tests/ruby/ @newrelic/ruby
