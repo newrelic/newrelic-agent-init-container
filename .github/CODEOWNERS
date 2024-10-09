@@ -19,8 +19,8 @@
 /tests/nodejs/ @newrelic/node
 
 /.github/workflows/php.yml @newrelic/phpc
-/src/php/ @newrelic/php-agent
-/tests/php/ @newrelic/php-agent
+/src/php/ @newrelic/phpc
+/tests/php/ @newrelic/phpc
 
 /.github/workflows/python.yml @newrelic/python
 /src/python/ @newrelic/python
