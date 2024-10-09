@@ -1,5 +1,5 @@
 # Default permissions for all files not matched below
-* @newrelic/dotnet @newrelic/go @newrelic/java @newrelic/node @newrelic/php-agent @newrelic/python @newrelic/ruby
+* @newrelic/dotnet @newrelic/go @newrelic/java @newrelic/node @newrelic/phpc @newrelic/python @newrelic/ruby
 
 # Team based ownership
 /.github/workflows/dotnet.yml @newrelic/dotnet
@@ -18,7 +18,7 @@
 /src/nodejs/ @newrelic/node
 /tests/nodejs/ @newrelic/node
 
-/.github/workflows/php.yml @newrelic/php-agent
+/.github/workflows/php.yml @newrelic/phpc
 /src/php/ @newrelic/php-agent
 /tests/php/ @newrelic/php-agent
 
