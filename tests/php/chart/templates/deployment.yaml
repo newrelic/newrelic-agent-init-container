@@ -23,7 +23,7 @@ spec:
           ports:
             - containerPort: 8000
           env:
-          - name: NEW_RELIC_APP_NAME
+          - name: NEW_RELIC_APPNAME
             value: k8s-e2e-test-app-php
           - name: NEW_RELIC_LABELS
             value: "testKey:{{ .Values.scenarioTag | default "NOTSET" }}"
