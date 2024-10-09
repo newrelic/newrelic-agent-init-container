@@ -14,8 +14,8 @@ COPY download_wheels.py .
 RUN python ./download_wheels.py
 
 # Install sdist without extensions to set up the directory
-ENV NEW_RELIC_EXTENSIONS False
-ENV WRAPT_DISABLE_EXTENSIONS True
+ENV NEW_RELIC_EXTENSIONS=False
+ENV WRAPT_DISABLE_EXTENSIONS=True
 RUN pip install ./workspace/newrelic.tar.gz --target=./workspace/newrelic && \
     rm ./workspace/newrelic.tar.gz
 
@@ -29,7 +29,7 @@ RUN cp ./workspace/newrelic/newrelic/bootstrap/sitecustomize.py ./workspace/site
 COPY newrelic_k8s_operator.py ./workspace/
 
 # Package Init Container
-FROM busybox:latest@sha256:9ae97d36d26566ff84e8893c64a6dc4fe8ca6d1144bf5b87b2b85a32def253c7
+FROM busybox:latest@sha256:c230832bd3b0be59a6c47ed64294f9ce71e91b327957920b6929a0caa8353140
 
 COPY --from=build /operator-build/workspace /instrumentation
 RUN chmod -R go+r /instrumentation
