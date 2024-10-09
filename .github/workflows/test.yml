@@ -34,6 +34,8 @@ jobs:
   test:
     name: Run E2E tests for ${{ inputs.INITCONTAINER_LANGUAGE }}
     runs-on: ubuntu-latest
+    env:
+      TEST_APP_HELM_CHART_ARGS: ${{ inputs.TEST_APP_HELM_CHART_ARGS }}
 
     steps:
       - name: Checkout code
