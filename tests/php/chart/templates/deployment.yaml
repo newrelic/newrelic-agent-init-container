@@ -21,7 +21,7 @@ spec:
           image: e2e/test-app-php:e2e
           imagePullPolicy: Never
           ports:
-            - containerPort: 80
+            - containerPort: 8000
           env:
           - name: NEW_RELIC_APP_NAME
             value: k8s-e2e-test-app-php
@@ -35,7 +35,7 @@ metadata:
 spec:
   type: NodePort
   ports:
-  - port: 80
-    targetPort: 80
+  - port: 8000
+    targetPort: 8000
   selector:
     app: test-app-php
