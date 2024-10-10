@@ -137,6 +137,17 @@ jobs:
           docker tag newrelic-${{ inputs.INITCONTAINER_LANGUAGE }}-init e2eazure.azurecr.io/newrelic-${{ inputs.INITCONTAINER_LANGUAGE }}-init:e2e
           docker push e2eazure.azurecr.io/newrelic-${{ inputs.INITCONTAINER_LANGUAGE }}-init:e2e
 
+      - name: Create and deploy Container App (first time)
+        uses: azure/container-apps-deploy-action@v1
+        with:
+          containerAppName: cli-test-container-app
+          acrName: e2eazure
+          imageToBuild: e2eazure.azurecr.io/test-app-${{ inputs.INITCONTAINER_LANGUAGE }}:e2e
+          resourceGroup: cli-test-rg
+          containerAppEnvironment: cli-test-env
+          builderStack: alpine-bookworm   # verify that this works
+          #yamlConfigPath: ${{ github.workspace }}/tests/${{ inputs.INITCONTAINER_LANGUAGE }}/template_file.yaml
+    
       - name: Azure CLI script to create license-key secrets
         uses: azure/cli@v2
         with:
@@ -144,17 +155,17 @@ jobs:
           inlineScript: |
             az containerapp secret set --name cli-test-container-app --resource-group cli-test-rg --secrets license-key=${{ secrets.NEW_RELIC_LICENSE_KEY }}
 
-      - name: Build and deploy Container App
+      - name: Update and deploy Container App (with YAML file)
         uses: azure/container-apps-deploy-action@v1
         with:
           #appSourcePath: tests/${{ inputs.INITCONTAINER_LANGUAGE }}/
           #dockerfilePath: tests.${{ inputs.INITCONTAINER_LANGUAGE }}.Dockerfile
           containerAppName: cli-test-container-app
-          acrName: e2eazure
-          imageToBuild: e2eazure.azurecr.io/test-app-${{ inputs.INITCONTAINER_LANGUAGE }}:e2e
+          #acrName: e2eazure
+          #imageToBuild: e2eazure.azurecr.io/test-app-${{ inputs.INITCONTAINER_LANGUAGE }}:e2e
           resourceGroup: cli-test-rg
-          containerAppEnvironment: cli-test-env
-          builderStack: alpine-bookworm   # verify that this works
+          #containerAppEnvironment: cli-test-env
+          #builderStack: alpine-bookworm   # verify that this works
           yamlConfigPath: ${{ github.workspace }}/tests/${{ inputs.INITCONTAINER_LANGUAGE }}/template_file.yaml
     
       - name: Run e2e-test for Azure
