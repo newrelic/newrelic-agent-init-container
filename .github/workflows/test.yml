@@ -129,7 +129,7 @@ jobs:
         run: |
           BUILD_ARGS=${{ inputs.TEST_APP_BUILD_ARGS }}
           if [[ -n "${BUILD_ARGS}" ]]; then BUILD_ARGS="--build-arg=${BUILD_ARGS}"; fi
-          docker build --tag test-app-${{ inputs.INITCONTAINER_LANGUAGE }}-init tests/${{ inputs.INITCONTAINER_LANGUAGE }}/ --platform linux/amd64 ${BUILD_ARGS}
+          docker build --tag test-app-${{ inputs.INITCONTAINER_LANGUAGE }} tests/${{ inputs.INITCONTAINER_LANGUAGE }}/ --platform linux/amd64 ${BUILD_ARGS}
           docker tag test-app-${{ inputs.INITCONTAINER_LANGUAGE }} e2eazure.azurecr.io/test-app-${{ inputs.INITCONTAINER_LANGUAGE }}:e2e
           docker push e2eazure.azurecr.io/test-app-${{ inputs.INITCONTAINER_LANGUAGE }}:e2e
           if [[ -n "${{ env.AGENT_VERSION }}" ]]; then BUILD_ARGS="${BUILD_ARGS:-} --build-arg=AGENT_VERSION=${{ env.AGENT_VERSION }}"; fi
