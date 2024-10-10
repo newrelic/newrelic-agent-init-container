@@ -1,0 +1,12 @@
+description: End-to-end tests for python initcontainer in Azure
+scenarios:
+  - description: This scenario will verify that a transaction is reported by the test app after a curl request
+    before:
+      - sleep 300
+      - curl https://`az containerapp show --name cli-test-container-app --resource-group cli-test-rg --query properties.configuration.ingress.fqdn | cut -d'"' -f2` 
+    tests:
+      nrqls:
+        - query: SELECT latest(duration) AS duration FROM Transaction WHERE appName = 'Azure-E2E-tests'
+          expected_results:
+            - key: "duration"
+              lowerBoundedValue: 0.0
