@@ -75,6 +75,6 @@ jobs:
       INITCONTAINER_LANGUAGE: php
       ARCHITECTURE: linux/amd64,linux/arm64
       DOCKER_IMAGE_NAME: newrelic/newrelic-php-init
-      DOCKER_IMAGE_TAG_SUFFIX: ${{ matrix.arch == 'gnu' && 'glibc' || 'musl' }}
-      DOCKER_IMAGE_TAG_IS_DEFAULT_SUFFIX: ${{ matrix.arch == 'gnu' }}
+      DOCKER_IMAGE_TAG_SUFFIX: ${{ matrix.libc == 'gnu' && 'glibc' || 'musl' }}
+      DOCKER_IMAGE_TAG_IS_DEFAULT_SUFFIX: ${{ matrix.libc == 'gnu' }}
       BUILD_ARGS: LIBC=${{ matrix.libc }}
