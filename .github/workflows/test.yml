@@ -6,17 +6,24 @@ name: Init Container Test
 on:
   workflow_call:
     inputs:
-      INITCONTAINER_LANGUAGE:
-        required: true
-        type: string
       K8S_OPERATOR_IMAGE_TAG:
         required: false
         type: string
         default: edge
+      ARCHITECTURE:
+        required: false
+        type: string
+        default: linux/amd64
+      INITCONTAINER_LANGUAGE:
+        required: true
+        type: string
       INITCONTAINER_BUILD_ARGS:
         required: false
         type: string
       TEST_APP_BUILD_ARGS:
+        required: false
+        type: string
+      TEST_APP_HELM_CHART_ARGS:
         required: false
         type: string
 
@@ -27,12 +34,21 @@ jobs:
   test:
     name: Run E2E tests for ${{ inputs.INITCONTAINER_LANGUAGE }}
     runs-on: ubuntu-latest
+    env:
+      TEST_APP_HELM_CHART_ARGS: ${{ inputs.TEST_APP_HELM_CHART_ARGS }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # 4.2.0
         with:
           persist-credentials: false
+
+      - name: Enable arm64 emulation
+        if: inputs.ARCHITECTURE != 'linux/amd64'
+        uses: docker/setup-qemu-action@49b3bc8e6bdd4a60e6116a5414239cba5943d3cf # 3.2.0
+        with:
+          image: tonistiigi/binfmt:qemu-v6.2.0
+          platforms: ${{ inputs.ARCHITECTURE }}
 
       - name: Extract Agent Version from Release Tag
         id: version
@@ -71,19 +87,27 @@ jobs:
           if [[ -n "${BUILD_ARGS}" ]]; then BUILD_ARGS="--build-arg=${BUILD_ARGS}"; fi
           if [[ -n "${{ env.AGENT_VERSION }}" ]]; then BUILD_ARGS="${BUILD_ARGS:-} --build-arg=AGENT_VERSION=${{ env.AGENT_VERSION }}"; fi
           eval "$(minikube docker-env)"
-          docker build -t e2e/newrelic-${{ inputs.INITCONTAINER_LANGUAGE }}-init:e2e src/${{ inputs.INITCONTAINER_LANGUAGE }}/ ${BUILD_ARGS}
+          docker build \
+            -t e2e/newrelic-${{ inputs.INITCONTAINER_LANGUAGE }}-init:e2e \
+            src/${{ inputs.INITCONTAINER_LANGUAGE }}/ \
+            --platform=${{ inputs.ARCHITECTURE }} \
+            ${BUILD_ARGS}
 
       - name: Build test app container
         run: |
           BUILD_ARGS=${{ inputs.TEST_APP_BUILD_ARGS }}
           if [[ -n "${BUILD_ARGS}" ]]; then BUILD_ARGS="--build-arg=${BUILD_ARGS}"; fi
           eval "$(minikube docker-env)"
-          docker build -t e2e/test-app-${{ inputs.INITCONTAINER_LANGUAGE }}:e2e tests/${{ inputs.INITCONTAINER_LANGUAGE }}/ ${BUILD_ARGS}
+          docker build \
+            -t e2e/test-app-${{ inputs.INITCONTAINER_LANGUAGE }}:e2e \
+            tests/${{ inputs.INITCONTAINER_LANGUAGE }}/ \
+            --platform=${{ inputs.ARCHITECTURE }} \
+            ${BUILD_ARGS}
 
       - name: Run e2e-test
         uses: newrelic/newrelic-integration-e2e-action@fd53fc95e287dcd7b5bd86a4a25d653aadf407d0  # 1.11.1
         # Skip e2e tests for dependabot PRs since dependabot can't access secrets
-        if: github.actor != 'dependabot[bot]' 
+        if: github.actor != 'dependabot[bot]'
         with:
           retry_seconds: 60
           retry_attempts: 5
