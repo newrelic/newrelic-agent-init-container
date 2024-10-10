@@ -97,9 +97,9 @@ jobs:
   # Once other teams complete work on init containers
   # the language conditional can be removed 
   azure:
+    if: inputs.INITCONTAINER_LANGUAGE == 'python'
     name: Run Azure E2E tests for Python 
     runs-on: ubuntu-latest
-    if: ${{ inputs.INITCONTAINER_LANGUAGE }} == "python"
 
     steps:
       - name: Checkout code
@@ -122,8 +122,8 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: e2eazure.azurecr.io
-          username: ${{ secrets.AZURE_CREDENTIALS.clientId }} # If this doesn't work, enter manually
-          password: ${{ secrets.AZURE_CREDENTIALS.clientSecret }} # If this doesn't work, enter manually
+          username: e2eazure
+          password: ${{ secrets.ACR_REGISTRY_PASSWORD }}
 
       - name: Build and push Docker images to ACR
         run: |
