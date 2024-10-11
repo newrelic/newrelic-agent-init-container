@@ -8,7 +8,7 @@ spec:
     matchExpressions:
       - key: "app.newrelic.instrumentation"
         operator: "In"
-        values: ["python"]
+        values: ["newrelic-python-agent"]
   agent:
     language: python
     image: e2e/newrelic-python-init:e2e

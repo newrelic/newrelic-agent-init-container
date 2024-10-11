@@ -1,3 +1,5 @@
+import os
+import pprint
 import sys
 import traceback
 
@@ -30,4 +32,6 @@ def hello_world():
         return "<p>Hello, World!</p><br><p>new_relic_path = %s</p>" % str(new_relic_path)
 
     except Exception:
-        return "".join(traceback.format_exception(*sys.exc_info())), 417
+        response = "\n".join(traceback.format_exception(*sys.exc_info()))
+        response += "\n" + pprint.pformat(dict(os.environ))
+        return response.replace("\n", "<br>"), 417
