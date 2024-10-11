@@ -63,20 +63,13 @@ jobs:
       - name: Start minikube
         uses: medyagh/setup-minikube@d8c0eb871f6f455542491d86a574477bd3894533 # 0.0.18
 
-      - name: Deploy cert-manager to minikube
-        run: |
-          helm repo add jetstack https://charts.jetstack.io --force-update
-          helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version v1.14.5 --set installCRDs=true
-          sleep 5
-          kubectl wait --for=condition=Ready -n cert-manager --all pods
-
       - name: Deploy New Relic k8s-agents-operator to minikube
         run: |
+          helm uninstall k8s-agents-operator --ignore-not-found
           helm repo add k8s-agents-operator https://newrelic.github.io/k8s-agents-operator
           helm upgrade --install k8s-agents-operator k8s-agents-operator/k8s-agents-operator \
             --namespace=default \
             --set=licenseKey=${{ secrets.NEW_RELIC_LICENSE_KEY }} \
-            --set=newRelicHost=${{ vars.NEW_RELIC_HOST }} \
             --set=controllerManager.manager.image.tag=${{ inputs.K8S_OPERATOR_IMAGE_TAG }}
           sleep 5
           kubectl wait --for=condition=Ready -n default --all pods
