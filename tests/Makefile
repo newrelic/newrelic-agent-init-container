@@ -23,41 +23,36 @@ minikube:
 
 # Install official k8s-agents-operator repo
 .PHONY: operator
-operator:
+operator: license_key_secret
 	helm uninstall k8s-agents-operator --ignore-not-found
 	helm repo add k8s-agents-operator https://newrelic.github.io/k8s-agents-operator
 	helm upgrade --install k8s-agents-operator k8s-agents-operator/k8s-agents-operator \
-		--create-namespace \
-		--namespace=newrelic \
 		--set=licenseKey=${NEW_RELIC_LICENSE_KEY} \
 		--set=controllerManager.manager.image.tag=edge
-	sleep 1
-	kubectl wait --for=condition=Ready -n newrelic --all pods
+	sleep 5
+	kubectl wait --for=condition=Ready pods $$(kubectl get pods | grep k8s-agents-operator | cut -d" " -f1)
 
 # Build and install local copy of k8s-agents-operator
 .PHONY: operator-local
-operator-local:
+operator-local: license_key_secret
 	eval $$(minikube docker-env --shell=bash) && \
 		docker build ${LOCAL_OPERATOR_REPO_PATH}/ -t e2e/k8s-agents-operator:e2e
 	helm uninstall k8s-agents-operator --ignore-not-found
 	sleep 1
 	helm upgrade --install k8s-agents-operator ${LOCAL_OPERATOR_REPO_PATH}/charts/k8s-agents-operator/ \
-		--create-namespace \
-		--namespace=newrelic \
 		--set=licenseKey=${NEW_RELIC_LICENSE_KEY} \
 		--set=controllerManager.manager.image.pullPolicy=Never \
 		--set=controllerManager.manager.image.repository=e2e/k8s-agents-operator \
 		--set=controllerManager.manager.image.tag=e2e
-	sleep 1
-	kubectl wait --for=condition=Ready -n newrelic --all pods
+	sleep 5
+	kubectl wait --for=condition=Ready pods $$(kubectl get pods | grep k8s-agents-operator | cut -d" " -f1)
 
 # Set license key in default namespace
 .PHONY: license_key_secret
 license_key_secret:
-	kubectl delete secret newrelic-key-secret --namespace=newrelic newrelic --ignore-not-found
+	kubectl delete secret newrelic-key-secret --ignore-not-found
 	kubectl create secret generic newrelic-key-secret \
-		--from-literal="new_relic_license_key=${NEW_RELIC_LICENSE_KEY}" \
-		--namespace=newrelic
+		--from-literal="new_relic_license_key=${NEW_RELIC_LICENSE_KEY}"
 
 # Build local initcontainer image
 .PHONY: build-initcontainer
@@ -94,7 +89,7 @@ logs-testapp:
 # View test app container logs
 .PHONY: logs-testapp
 logs-operator:
-	kubectl logs -n k8s-agents-operator $$(kubectl get pods -n k8s-agents-operator | grep k8s-agents-operator | cut -d" " -f1)
+	kubectl logs $$(kubectl get pods | grep k8s-agents-operator | cut -d" " -f1)
 
 .PHONY: check-language-arg
 check-language-arg:
