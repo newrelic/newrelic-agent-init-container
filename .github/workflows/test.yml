@@ -141,11 +141,11 @@ jobs:
         uses: azure/container-apps-deploy-action@v1
         with:
           containerAppName: cli-test-container-app
-          acrName: e2eazure
-          imageToBuild: e2eazure.azurecr.io/test-app-${{ inputs.INITCONTAINER_LANGUAGE }}:e2e
+          #acrName: e2eazure
+          imageToDeploy: e2eazure.azurecr.io/test-app-${{ inputs.INITCONTAINER_LANGUAGE }}:e2e
           resourceGroup: cli-test-rg
           containerAppEnvironment: cli-test-env
-          builderStack: alpine-bookworm
+          #builderStack: alpine-bookworm
     
       - name: Azure CLI script to create license-key secrets
         uses: azure/cli@v2
