@@ -24,7 +24,7 @@ on:
 permissions: read-all
 
 jobs:
-  kubernetes:  
+  test:  
     name: Run Kubernetes E2E tests for ${{ inputs.INITCONTAINER_LANGUAGE }}
     runs-on: ubuntu-latest
 
@@ -142,11 +142,10 @@ jobs:
         with:
           containerAppName: cli-test-container-app
           acrName: e2eazure
-          imageToBuild: e2eazure.azurecr.io/test-app-${{ inputs.INITCONTAINER_LANGUAGE }}:e2e
+          imageToDeploy: e2eazure.azurecr.io/test-app-${{ inputs.INITCONTAINER_LANGUAGE }}:e2e
           resourceGroup: cli-test-rg
           containerAppEnvironment: cli-test-env
-          builderStack: alpine-bookworm   # verify that this works
-          #yamlConfigPath: ${{ github.workspace }}/tests/${{ inputs.INITCONTAINER_LANGUAGE }}/template_file.yaml
+          builderStack: alpine-bookworm
     
       - name: Azure CLI script to create license-key secrets
         uses: azure/cli@v2
