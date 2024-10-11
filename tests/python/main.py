@@ -1,5 +1,3 @@
-import os
-import pprint
 import sys
 import traceback
 
@@ -29,9 +27,9 @@ def hello_world():
         assert "linux" in new_relic_path, "Operator failed to find binary agent."
 
         # Return 200 OK response
-        return "<p>Hello, World!</p><br><p>new_relic_path = %s</p>" % str(new_relic_path)
+        response = "<p>Hello, World!</p><br><p>new_relic_path = %s</p>" % str(new_relic_path)
+        return response, 200
 
     except Exception:
-        response = "\n".join(traceback.format_exception(*sys.exc_info()))
-        response += "\n" + pprint.pformat(dict(os.environ))
-        return response.replace("\n", "<br>"), 417
+        response = "<br>\n".join(traceback.format_exception(*sys.exc_info()))
+        return response, 417
