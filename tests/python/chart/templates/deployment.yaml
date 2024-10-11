@@ -12,6 +12,7 @@ spec:
     metadata:
       labels:
         app: test-app-python
+        app.newrelic.instrumentation: python
       annotations:
         instrumentation.newrelic.com/inject-python: "true"
     spec:
@@ -20,7 +21,7 @@ spec:
           image: e2e/test-app-python:e2e
           imagePullPolicy: Never
           ports:
-            - containerPort: 8000
+            - containerPort: {{ .Values.exposedPort }}
           env:
           - name: NEW_RELIC_APP_NAME
             value: k8s-e2e-test-app-python
@@ -34,7 +35,7 @@ metadata:
 spec:
   type: NodePort
   ports:
-  - port: 8000
-    targetPort: 8000
+  - port: {{ .Values.exposedPort }}
+    targetPort: {{ .Values.exposedPort }}
   selector:
     app: test-app-python
