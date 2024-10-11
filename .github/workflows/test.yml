@@ -24,7 +24,7 @@ on:
 permissions: read-all
 
 jobs:
-  test:  
+  kubernetes:  
     name: Run Kubernetes E2E tests for ${{ inputs.INITCONTAINER_LANGUAGE }}
     runs-on: ubuntu-latest
 
@@ -142,7 +142,7 @@ jobs:
         with:
           containerAppName: cli-test-container-app
           acrName: e2eazure
-          imageToDeploy: e2eazure.azurecr.io/test-app-${{ inputs.INITCONTAINER_LANGUAGE }}:e2e
+          imageToBuild: e2eazure.azurecr.io/test-app-${{ inputs.INITCONTAINER_LANGUAGE }}:e2e
           resourceGroup: cli-test-rg
           containerAppEnvironment: cli-test-env
           builderStack: alpine-bookworm
