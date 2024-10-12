@@ -12,21 +12,20 @@ spec:
     metadata:
       labels:
         app: test-app-dotnet
-      annotations:
-        instrumentation.newrelic.com/inject-dotnet: "true"
+        app.newrelic.instrumentation: newrelic-dotnet-agent
     spec:
       containers:
         - name: test-app-dotnet
           image: e2e/test-app-dotnet:e2e
           imagePullPolicy: Never
           ports:
-            - containerPort: 80
+            - containerPort: {{ .Values.exposedPort }}
           env:
           - name: NEW_RELIC_APP_NAME
             value: k8s-e2e-test-app-dotnet
-          # used by the e2e Github action
+          # labels used by the e2e Github action
           - name: NEW_RELIC_LABELS
-            value: 'testKey:{{ .Values.scenarioTag | default "NOTSET" }}'
+            value: "testKey:{{ .Values.scenarioTag | default "NOTSET" }}"
           # for testing, comment out if not needed
           - name: NEWRELIC_LOG_LEVEL
             value: finest
@@ -40,8 +39,9 @@ kind: Service
 metadata:
   name: test-app-dotnet-service
 spec:
-  type: LoadBalancer
+  type: NodePort
   ports:
-  - port: 80
+  - port: {{ .Values.exposedPort }}
+    targetPort: {{ .Values.exposedPort }}
   selector:
     app: test-app-dotnet

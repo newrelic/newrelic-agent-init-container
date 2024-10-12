@@ -23,6 +23,7 @@ spec:
           env:
           - name: NEW_RELIC_APP_NAME
             value: k8s-e2e-test-app-python
+          # labels used by the e2e Github action
           - name: NEW_RELIC_LABELS
             value: "testKey:{{ .Values.scenarioTag | default "NOTSET" }}"
 ---

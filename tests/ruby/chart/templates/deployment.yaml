@@ -12,19 +12,18 @@ spec:
     metadata:
       labels:
         app: test-app-ruby
-      annotations:
-        instrumentation.newrelic.com/inject-ruby: "true"
+        app.newrelic.instrumentation: newrelic-ruby-agent
     spec:
       containers:
         - name: test-app-ruby
           image: e2e/test-app-ruby:e2e
           imagePullPolicy: Never
           ports:
-            - containerPort: 9292
+            - containerPort: {{ .Values.exposedPort }}
           env:
           - name: NEW_RELIC_APP_NAME
             value: k8s-e2e-test-app-ruby
-          # used by the e2e Github action
+          # labels used by the e2e Github action
           - name: NEW_RELIC_LABELS
             value: "testKey:{{ .Values.scenarioTag | default "NOTSET" }}"
           - name: NEW_RELIC_LOG_LEVEL
@@ -40,7 +39,7 @@ metadata:
 spec:
   type: NodePort
   ports:
-  - port: 9292
-    targetPort: 9292
+  - port: {{ .Values.exposedPort }}
+    targetPort: {{ .Values.exposedPort }}
   selector:
     app: test-app-ruby
