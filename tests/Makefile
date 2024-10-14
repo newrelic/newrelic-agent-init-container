@@ -42,6 +42,7 @@ operator-local:
 	sleep 1
 	helm upgrade --install k8s-agents-operator ${LOCAL_OPERATOR_REPO_PATH}/charts/k8s-agents-operator/ \
 		--set=licenseKey=${NEW_RELIC_LICENSE_KEY} \
+		--set=newRelicHost=${NEW_RELIC_HOST} \
 		--set=controllerManager.manager.image.pullPolicy=Never \
 		--set=controllerManager.manager.image.repository=e2e/k8s-agents-operator \
 		--set=controllerManager.manager.image.tag=e2e
@@ -88,7 +89,7 @@ logs-testapp:
 	kubectl logs $$(kubectl get pods -n default | grep test-app- | cut -d" " -f1)
 
 # View test app container logs
-.PHONY: logs-testapp
+.PHONY: logs-operator
 logs-operator:
 	kubectl logs $$(kubectl get pods | grep k8s-agents-operator | cut -d" " -f1)
 
