@@ -72,7 +72,6 @@ jobs:
 
       - name: Deploy New Relic k8s-agents-operator to minikube
         run: |
-          helm uninstall k8s-agents-operator --ignore-not-found
           helm repo add k8s-agents-operator https://newrelic.github.io/k8s-agents-operator
           helm upgrade --install k8s-agents-operator k8s-agents-operator/k8s-agents-operator \
             --namespace=default \
