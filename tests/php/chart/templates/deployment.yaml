@@ -23,7 +23,7 @@ spec:
           ports:
             - containerPort: {{ .Values.exposedPort }}
           env:
-          - name: NEW_RELIC_APP_NAME
+          - name: NEW_RELIC_APPNAME
             value: k8s-e2e-test-app-php
           # labels used by the e2e Github action
           - name: NEW_RELIC_LABELS
