@@ -14,7 +14,7 @@ default: all
 
 # Install all dependencies and run tests
 .PHONY: all
-all: minikube cert-manager operator test
+all: minikube operator test
 
 # Start minikube
 .PHONY: minikube
