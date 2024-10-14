@@ -23,7 +23,7 @@ minikube:
 
 # Install official k8s-agents-operator repo
 .PHONY: operator
-operator: license_key_secret
+operator:
 	helm uninstall k8s-agents-operator --ignore-not-found
 	helm repo add k8s-agents-operator https://newrelic.github.io/k8s-agents-operator
 	helm upgrade --install k8s-agents-operator k8s-agents-operator/k8s-agents-operator \
@@ -34,7 +34,7 @@ operator: license_key_secret
 
 # Build and install local copy of k8s-agents-operator
 .PHONY: operator-local
-operator-local: license_key_secret
+operator-local:
 	eval $$(minikube docker-env --shell=bash) && \
 		docker build ${LOCAL_OPERATOR_REPO_PATH}/ -t e2e/k8s-agents-operator:e2e
 	helm uninstall k8s-agents-operator --ignore-not-found
