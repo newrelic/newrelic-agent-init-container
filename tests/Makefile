@@ -20,6 +20,7 @@ all: minikube operator test
 .PHONY: minikube
 minikube:
 	minikube start --driver=docker
+	helm repo update
 
 # Install official k8s-agents-operator repo
 .PHONY: operator
