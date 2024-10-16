@@ -1,2 +1,3 @@
 scenarioTag: ""
 newRelicHost: ""
+exposedPort: 80

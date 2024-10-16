@@ -12,8 +12,8 @@ spec:
     metadata:
       labels:
         app: test-app-php
+        app.newrelic.instrumentation: newrelic-php-agent
       annotations:
-        instrumentation.newrelic.com/inject-php: "true"
         instrumentation.newrelic.com/php-version: "{{ .Values.phpVersion }}"
     spec:
       containers:
@@ -21,10 +21,11 @@ spec:
           image: e2e/test-app-php:e2e
           imagePullPolicy: Never
           ports:
-            - containerPort: 8000
+            - containerPort: {{ .Values.exposedPort }}
           env:
           - name: NEW_RELIC_APPNAME
             value: k8s-e2e-test-app-php
+          # labels used by the e2e Github action
           - name: NEW_RELIC_LABELS
             value: "testKey:{{ .Values.scenarioTag | default "NOTSET" }}"
 ---
@@ -35,7 +36,7 @@ metadata:
 spec:
   type: NodePort
   ports:
-  - port: 8000
-    targetPort: 8000
+  - port: {{ .Values.exposedPort }}
+    targetPort: {{ .Values.exposedPort }}
   selector:
     app: test-app-php

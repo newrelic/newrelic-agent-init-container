@@ -43,6 +43,13 @@ jobs:
         with:
           persist-credentials: false
 
+      # Gives higher rate limits for image pulls
+      - name: Login to Docker Hub Container Registry (Read Only)
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # 3.3.0
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN_READ_ONLY }}
+
       - name: Enable arm64 emulation
         if: inputs.ARCHITECTURE != 'linux/amd64'
         uses: docker/setup-qemu-action@49b3bc8e6bdd4a60e6116a5414239cba5943d3cf # 3.2.0
@@ -63,20 +70,12 @@ jobs:
       - name: Start minikube
         uses: medyagh/setup-minikube@d8c0eb871f6f455542491d86a574477bd3894533 # 0.0.18
 
-      - name: Deploy cert-manager to minikube
-        run: |
-          helm repo add jetstack https://charts.jetstack.io --force-update
-          helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version v1.14.5 --set installCRDs=true
-          sleep 5
-          kubectl wait --for=condition=Ready -n cert-manager --all pods
-
       - name: Deploy New Relic k8s-agents-operator to minikube
         run: |
           helm repo add k8s-agents-operator https://newrelic.github.io/k8s-agents-operator
           helm upgrade --install k8s-agents-operator k8s-agents-operator/k8s-agents-operator \
             --namespace=default \
             --set=licenseKey=${{ secrets.NEW_RELIC_LICENSE_KEY }} \
-            --set=newRelicHost=${{ vars.NEW_RELIC_HOST }} \
             --set=controllerManager.manager.image.tag=${{ inputs.K8S_OPERATOR_IMAGE_TAG }}
           sleep 5
           kubectl wait --for=condition=Ready -n default --all pods

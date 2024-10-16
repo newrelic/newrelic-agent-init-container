@@ -12,18 +12,18 @@ spec:
     metadata:
       labels:
         app: test-app-python
-      annotations:
-        instrumentation.newrelic.com/inject-python: "true"
+        app.newrelic.instrumentation: newrelic-python-agent
     spec:
       containers:
         - name: test-app-python
           image: e2e/test-app-python:e2e
           imagePullPolicy: Never
           ports:
-            - containerPort: 8000
+            - containerPort: {{ .Values.exposedPort }}
           env:
           - name: NEW_RELIC_APP_NAME
             value: k8s-e2e-test-app-python
+          # labels used by the e2e Github action
           - name: NEW_RELIC_LABELS
             value: "testKey:{{ .Values.scenarioTag | default "NOTSET" }}"
 ---
@@ -34,7 +34,7 @@ metadata:
 spec:
   type: NodePort
   ports:
-  - port: 8000
-    targetPort: 8000
+  - port: {{ .Values.exposedPort }}
+    targetPort: {{ .Values.exposedPort }}
   selector:
     app: test-app-python

@@ -12,19 +12,19 @@ spec:
     metadata:
       labels:
         app: test-app-java
-      annotations:
-        instrumentation.newrelic.com/inject-java: "true"
+        app.newrelic.instrumentation: newrelic-java-agent
     spec:
       containers:
         - name: test-app-java
           image: e2e/test-app-java:e2e
           imagePullPolicy: Never
           ports:
-            - containerPort: 8080
+            - containerPort: {{ .Values.exposedPort }}
           env:
           - name: NEW_RELIC_APP_NAME
             value: k8s-e2e-test-app-java
-          - name: NEW_RELIC_LABELS # labels used by the e2e Github action
+          # labels used by the e2e Github action
+          - name: NEW_RELIC_LABELS
             value: "testKey:{{ .Values.scenarioTag | default "NOTSET" }}"
           - name: NEW_RELIC_SYNC_STARTUP
             value: "true"
@@ -47,7 +47,7 @@ metadata:
 spec:
   type: NodePort
   ports:
-  - port: 8080
-    targetPort: 8080
+  - port: {{ .Values.exposedPort }}
+    targetPort: {{ .Values.exposedPort }}
   selector:
     app: test-app-java

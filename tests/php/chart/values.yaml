@@ -1,2 +1,3 @@
 scenarioTag: ""
 phpVersion: ""
+exposedPort: 8000

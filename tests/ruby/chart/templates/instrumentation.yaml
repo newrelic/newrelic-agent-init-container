@@ -1,11 +1,14 @@
 ---
-apiVersion: newrelic.com/v1alpha1
+apiVersion: newrelic.com/v1alpha2
 kind: Instrumentation
 metadata:
-  labels:
-    app.kubernetes.io/name: instrumentation
-    app.kubernetes.io/created-by: newrelic-agent-operator
-  name: newrelic-instrumentation
+  name: newrelic-instrumentation-ruby
 spec:
-  ruby:
+  podLabelSelector:
+    matchExpressions:
+      - key: "app.newrelic.instrumentation"
+        operator: "In"
+        values: ["newrelic-ruby-agent"]
+  agent:
+    language: ruby
     image: e2e/newrelic-ruby-init:e2e

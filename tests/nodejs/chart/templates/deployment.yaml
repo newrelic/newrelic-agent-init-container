@@ -12,18 +12,18 @@ spec:
     metadata:
       labels:
         app: test-app-nodejs
-      annotations:
-        instrumentation.newrelic.com/inject-nodejs: "true"
+        app.newrelic.instrumentation: newrelic-nodejs-agent
     spec:
       containers:
         - name: test-app-nodejs
           image: e2e/test-app-nodejs:e2e
           imagePullPolicy: Never
           ports:
-            - containerPort: 8000
+            - containerPort: {{ .Values.exposedPort }}
           env:
           - name: NEW_RELIC_APP_NAME
             value: k8s-e2e-test-app-nodejs
+          # labels used by the e2e Github action
           - name: NEW_RELIC_LABELS
             value: "testKey:{{ .Values.scenarioTag | default "NOTSET" }}"
 ---
@@ -34,8 +34,7 @@ metadata:
 spec:
   type: NodePort
   ports:
-  - name: external
-    port: 8000
-    targetPort: 8000
+  - port: {{ .Values.exposedPort }}
+    targetPort: {{ .Values.exposedPort }}
   selector:
     app: test-app-nodejs

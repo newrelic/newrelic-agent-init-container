@@ -14,58 +14,47 @@ default: all
 
 # Install all dependencies and run tests
 .PHONY: all
-all: minikube cert-manager operator test
+all: minikube operator test
 
 # Start minikube
 .PHONY: minikube
 minikube:
 	minikube start --driver=docker
-
-# Install jetstack/cert-manager dependency
-.PHONY: cert-manager
-cert-manager:
-	helm repo add jetstack https://charts.jetstack.io --force-update
-	helm upgrade --install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version v1.14.5 --set installCRDs=true
-	sleep 1
-	kubectl wait --for=condition=Ready -n cert-manager --all pods --timeout=60s
+	helm repo update
 
 # Install official k8s-agents-operator repo
 .PHONY: operator
-operator: cert-manager license_key_secret
+operator:
 	helm uninstall k8s-agents-operator --ignore-not-found
 	helm repo add k8s-agents-operator https://newrelic.github.io/k8s-agents-operator
 	helm upgrade --install k8s-agents-operator k8s-agents-operator/k8s-agents-operator \
-		--create-namespace \
-		--namespace=k8s-agents-operator \
 		--set=licenseKey=${NEW_RELIC_LICENSE_KEY} \
 		--set=controllerManager.manager.image.tag=edge
-	sleep 1
-	kubectl wait --for=condition=Ready -n k8s-agents-operator --all pods
+	sleep 5
+	kubectl wait --for=condition=Ready pods $$(kubectl get pods | grep k8s-agents-operator | cut -d" " -f1)
 
 # Build and install local copy of k8s-agents-operator
 .PHONY: operator-local
-operator-local: license_key_secret
+operator-local:
 	eval $$(minikube docker-env --shell=bash) && \
 		docker build ${LOCAL_OPERATOR_REPO_PATH}/ -t e2e/k8s-agents-operator:e2e
 	helm uninstall k8s-agents-operator --ignore-not-found
 	sleep 1
 	helm upgrade --install k8s-agents-operator ${LOCAL_OPERATOR_REPO_PATH}/charts/k8s-agents-operator/ \
-		--create-namespace \
-		--namespace=k8s-agents-operator \
 		--set=licenseKey=${NEW_RELIC_LICENSE_KEY} \
+		--set=newRelicHost=${NEW_RELIC_HOST} \
 		--set=controllerManager.manager.image.pullPolicy=Never \
 		--set=controllerManager.manager.image.repository=e2e/k8s-agents-operator \
 		--set=controllerManager.manager.image.tag=e2e
-	sleep 1
-	kubectl wait --for=condition=Ready -n k8s-agents-operator --all pods
+	sleep 5
+	kubectl wait --for=condition=Ready pods $$(kubectl get pods | grep k8s-agents-operator | cut -d" " -f1)
 
 # Set license key in default namespace
 .PHONY: license_key_secret
 license_key_secret:
 	kubectl delete secret newrelic-key-secret --ignore-not-found
 	kubectl create secret generic newrelic-key-secret \
-		--from-literal="new_relic_license_key=${NEW_RELIC_LICENSE_KEY}" \
-		-n default
+		--from-literal="new_relic_license_key=${NEW_RELIC_LICENSE_KEY}"
 
 # Build local initcontainer image
 .PHONY: build-initcontainer
@@ -100,9 +89,9 @@ logs-testapp:
 	kubectl logs $$(kubectl get pods -n default | grep test-app- | cut -d" " -f1)
 
 # View test app container logs
-.PHONY: logs-testapp
+.PHONY: logs-operator
 logs-operator:
-	kubectl logs -n k8s-agents-operator $$(kubectl get pods -n k8s-agents-operator | grep k8s-agents-operator | cut -d" " -f1)
+	kubectl logs $$(kubectl get pods | grep k8s-agents-operator | cut -d" " -f1)
 
 .PHONY: check-language-arg
 check-language-arg:

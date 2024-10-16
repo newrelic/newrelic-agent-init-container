@@ -1,13 +1,16 @@
 ---
-apiVersion: newrelic.com/v1alpha1
+apiVersion: newrelic.com/v1alpha2
 kind: Instrumentation
 metadata:
-  labels:
-    app.kubernetes.io/name: instrumentation
-    app.kubernetes.io/created-by: newrelic-agent-operator
-  name: newrelic-instrumentation
+  name: newrelic-instrumentation-python
 spec:
-  python:
+  podLabelSelector:
+    matchExpressions:
+      - key: "app.newrelic.instrumentation"
+        operator: "In"
+        values: ["newrelic-python-agent"]
+  agent:
+    language: python
     image: e2e/newrelic-python-init:e2e
     # Configure agent for testing using environment variables
     env:
