@@ -1,0 +1,71 @@
+location: West US
+name: cli-test-container-app
+properties:
+  configuration:
+    activeRevisionsMode: Single
+    ingress:
+      allowInsecure: false
+      exposedPort: 0
+      external: true
+      targetPort: 8000
+      traffic:
+      - latestRevision: true
+        weight: 100
+      transport: Auto
+    maxInactiveRevisions: 100
+    registries:
+    - identity: ''
+      passwordSecretRef: e2eazureazurecrio-e2eazure
+      server: e2eazure.azurecr.io
+      username: e2eazure
+    secrets:
+    - name: e2eazureazurecrio-e2eazure
+    - name: license-key
+  template:
+    containers:
+    - env:
+      #      - name: NEW_RELIC_HOST
+      #        value: staging-collector.newrelic.com
+      - name: NEW_RELIC_APP_NAME
+        value: Azure-E2E-tests
+      - name: NEW_RELIC_K8S_OPERATOR_ENABLED
+        value: 'true'
+      - name: PYTHONPATH
+        value: /mnt/instrumentation
+      - name: NEW_RELIC_LICENSE_KEY
+        secretRef: license-key
+      image: e2eazure.azurecr.io/test-app-python:e2e
+      name: cli-test-container-app
+      resources:
+        cpu: 2
+        ephemeralStorage: 4Gi
+        memory: 4Gi
+      volumeMounts:
+      - mountPath: /mnt/instrumentation
+        volumeName: instrumentation
+    initContainers:
+    - args:
+      - -c
+      - cp -r /instrumentation /mnt/
+      command:
+      - /bin/sh
+      image: e2eazure.azurecr.io/newrelic-python-init:e2e
+      name: nr-init-container
+      resources:
+        cpu: 2
+        ephemeralStorage: 4Gi
+        memory: 4Gi
+      volumeMounts:
+      - mountPath: /mnt/instrumentation
+        volumeName: instrumentation
+    revisionSuffix: ''
+    scale:
+      maxReplicas: 1
+      minReplicas: 1
+    volumes:
+    - name: instrumentation
+      storageName: instrumentation
+      storageType: AzureFile
+  workloadProfileName: Consumption
+resourceGroup: cli-test-rg
+type: Microsoft.App/containerApps
