@@ -13,8 +13,6 @@ spec:
       labels:
         app: test-app-php
         app.newrelic.instrumentation: newrelic-php-agent
-      annotations:
-        instrumentation.newrelic.com/php-version: "{{ .Values.phpVersion }}"
     spec:
       containers:
         - name: test-app-php

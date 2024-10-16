@@ -7,9 +7,7 @@ scenarios:
       - sleep 5
       - kubectl wait --for=condition=Ready -n default --all pods --timeout=2m
       - curl --fail-with-body $(minikube service test-app-php-service --url -n default)
-      - sleep 5
       - curl --fail-with-body $(minikube service test-app-php-service --url -n default)
-      - sleep 5
       - curl --fail-with-body $(minikube service test-app-php-service --url -n default)
     tests:
       nrqls:
