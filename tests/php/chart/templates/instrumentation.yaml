@@ -10,5 +10,5 @@ spec:
         operator: "In"
         values: ["newrelic-php-agent"]
   agent:
-    language: php
+    language: "php-{{ .Values.phpVersion }}"
     image: e2e/newrelic-php-init:e2e
