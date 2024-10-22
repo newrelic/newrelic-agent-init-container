@@ -3,7 +3,7 @@ updates:
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: weekly
+      interval: monthly
     groups:
       github-actions:
         patterns:
@@ -13,53 +13,53 @@ updates:
   - package-ecosystem: docker
     directory: /src/dotnet
     schedule:
-      interval: weekly
+      interval: monthly
   - package-ecosystem: docker
     directory: /tests/dotnet
     schedule:
-      interval: weekly
+      interval: monthly
 
   - package-ecosystem: docker
     directory: /src/java
     schedule:
-      interval: weekly
+      interval: monthly
   - package-ecosystem: docker
     directory: /tests/java
     schedule:
-      interval: weekly
+      interval: monthly
 
   - package-ecosystem: docker
     directory: /src/nodejs
     schedule:
-      interval: weekly
+      interval: monthly
   - package-ecosystem: docker
     directory: /tests/nodejs
     schedule:
-      interval: weekly
+      interval: monthly
 
   - package-ecosystem: docker
     directory: /src/php
     schedule:
-      interval: weekly
+      interval: monthly
   - package-ecosystem: docker
     directory: /tests/php
     schedule:
-      interval: weekly
+      interval: monthly
 
   - package-ecosystem: docker
     directory: /src/python
     schedule:
-      interval: weekly
+      interval: monthly
   - package-ecosystem: docker
     directory: /tests/python
     schedule:
-      interval: weekly
+      interval: monthly
 
   - package-ecosystem: docker
     directory: /src/ruby
     schedule:
-      interval: weekly
+      interval: monthly
   - package-ecosystem: docker
     directory: /tests/ruby
     schedule:
-      interval: weekly
+      interval: monthly
