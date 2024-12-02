@@ -1,0 +1,24 @@
+# Copyright New Relic, Inc.
+# SPDX-License-Identifier: Apache-2.0
+---
+
+name: "Run tests for all languages"
+
+on:
+  workflow_dispatch:
+
+permissions: read-all
+
+jobs:
+  test-dotnet:
+    uses: ./.github/workflows/dotnet.yml
+  test-java:
+    uses: ./.github/workflows/java.yml
+  test-nodejs:
+    uses: ./.github/workflows/nodejs.yml
+  test-python:
+    uses: ./.github/workflows/python.yml
+  test-php:
+    uses: ./.github/workflows/php.yml
+  test-ruby:
+    uses: ./.github/workflows/ruby.yml
