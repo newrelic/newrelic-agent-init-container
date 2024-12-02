@@ -33,7 +33,8 @@ on:
   release:
     types:
       - published
-
+  workflow_call:
+    
 env:
   INITCONTAINER_LANGUAGE: nodejs
 
