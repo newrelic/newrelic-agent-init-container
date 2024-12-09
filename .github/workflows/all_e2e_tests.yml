@@ -12,13 +12,19 @@ permissions: read-all
 jobs:
   test-dotnet:
     uses: ./.github/workflows/dotnet.yml
+    secrets: inherit
   test-java:
     uses: ./.github/workflows/java.yml
+    secrets: inherit
   test-nodejs:
     uses: ./.github/workflows/nodejs.yml
+    secrets: inherit
   test-python:
     uses: ./.github/workflows/python.yml
+    secrets: inherit
   test-php:
     uses: ./.github/workflows/php.yml
+    secrets: inherit
   test-ruby:
     uses: ./.github/workflows/ruby.yml
+    secrets: inherit
