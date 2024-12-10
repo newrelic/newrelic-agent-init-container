@@ -14,7 +14,7 @@ RUN chmod +x /java-agent-download.sh
 ARG AGENT_VERSION
 RUN /java-agent-download.sh $AGENT_VERSION
 
-FROM busybox:latest@sha256:9ae97d36d26566ff84e8893c64a6dc4fe8ca6d1144bf5b87b2b85a32def253c7
+FROM busybox:latest@sha256:db142d433cdde11f10ae479dbf92f3b13d693fd1c91053da9979728cceb1dc68
 COPY --from=build /newrelic-agent.jar /newrelic-agent.jar
 # Set executable permissions on Java agent jar file
 RUN chmod -R go+r /newrelic-agent.jar
