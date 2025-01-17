@@ -45,7 +45,7 @@ operator-local:
 		--set=newRelicHost=${NEW_RELIC_HOST} \
 		--set=controllerManager.manager.image.pullPolicy=Never \
 		--set=controllerManager.manager.image.repository=e2e/k8s-agents-operator \
-		--set=controllerManager.manager.image.tag=e2e
+		--set=controllerManager.manager.image.version=e2e
 	sleep 5
 	kubectl wait --for=condition=Ready pods $$(kubectl get pods | grep k8s-agents-operator | cut -d" " -f1)
 
