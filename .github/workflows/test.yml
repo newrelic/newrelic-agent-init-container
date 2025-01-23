@@ -79,7 +79,7 @@ jobs:
           helm upgrade --install k8s-agents-operator k8s-agents-operator/k8s-agents-operator \
             --namespace=default \
             --set=licenseKey=${{ secrets.NEW_RELIC_LICENSE_KEY }} \
-            --set=controllerManager.manager.image.tag=${{ inputs.K8S_OPERATOR_IMAGE_TAG }}
+            --set=controllerManager.manager.image.version=${{ inputs.K8S_OPERATOR_IMAGE_TAG }}
           sleep 5
           kubectl wait --for=condition=Ready -n default --all pods
 
