@@ -71,23 +71,19 @@ export NEW_RELIC_LICENSE_KEY=***
 ```bash
 make -f tests/Makefile minikube
 ```
-3. Install [cert-manager](https://cert-manager.io/).
-```bash
-make -f tests/Makefile cert-manager
-```
-4. Install the New Relic [Kubernetes Agents Operator](https://github.com/newrelic/k8s-agents-operator/)
+3. Install the New Relic [Kubernetes Agents Operator](https://github.com/newrelic/k8s-agents-operator/)
 ```bash
 make -f tests/Makefile operator
 ```
-5. Build a local copy of the init container in minikube.
+4. Build a local copy of the init container in minikube.
 ```bash
 make -f tests/Makefile build-initcontainer
 ```
-6. Build a local copy of the test app in minikube.
+5. Build a local copy of the test app in minikube.
 ```bash
 make -f tests/Makefile build-testapp
 ```
-7. Deploy the test app instrumented with the init container. A browser window will open if the deployment succeeds.
+6. Deploy the test app instrumented with the init container. A browser window will open if the deployment succeeds.
 ```bash
 make -f tests/Makefile test
 ```

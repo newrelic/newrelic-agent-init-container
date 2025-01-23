@@ -29,7 +29,7 @@ operator:
 	helm repo add k8s-agents-operator https://newrelic.github.io/k8s-agents-operator
 	helm upgrade --install k8s-agents-operator k8s-agents-operator/k8s-agents-operator \
 		--set=licenseKey=${NEW_RELIC_LICENSE_KEY} \
-		--set=controllerManager.manager.image.tag=edge
+		--set=controllerManager.manager.image.version=edge
 	sleep 5
 	kubectl wait --for=condition=Ready pods $$(kubectl get pods | grep k8s-agents-operator | cut -d" " -f1)
 
@@ -45,7 +45,7 @@ operator-local:
 		--set=newRelicHost=${NEW_RELIC_HOST} \
 		--set=controllerManager.manager.image.pullPolicy=Never \
 		--set=controllerManager.manager.image.repository=e2e/k8s-agents-operator \
-		--set=controllerManager.manager.image.tag=e2e
+		--set=controllerManager.manager.image.version=e2e
 	sleep 5
 	kubectl wait --for=condition=Ready pods $$(kubectl get pods | grep k8s-agents-operator | cut -d" " -f1)
 
