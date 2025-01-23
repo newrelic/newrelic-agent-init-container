@@ -6,6 +6,7 @@ scenarios:
       - helm install test-php ./chart/ --set=scenarioTag="${SCENARIO_TAG}" ${TEST_APP_HELM_CHART_ARGS} -n default
       - sleep 5
       - kubectl wait --for=condition=Ready -n default --all pods --timeout=2m
+      - kubectl get pods --output yaml | yq '.items[].spec.initContainers[].name' | grep -q "newrelic-instrumentation-" || $(echo "Operator failed to attach initcontainer." >&2; exit 1)
       - curl --fail-with-body $(minikube service test-app-php-service --url -n default)
       - sleep 5
       - curl --fail-with-body $(minikube service test-app-php-service --url -n default)

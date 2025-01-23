@@ -6,6 +6,7 @@ scenarios:
       - helm install test-dotnet ./chart/ --set=scenarioTag="${SCENARIO_TAG}" -n default
       - sleep 5
       - kubectl wait --for=condition=Ready -n default --all pods
+      - kubectl get pods --output yaml | yq '.items[].spec.initContainers[].name' | grep -q "newrelic-instrumentation-" || $(echo "Operator failed to attach initcontainer." >&2; exit 1)
       - sleep 15 # give the agent time to connect
       - curl --fail-with-body $(minikube service test-app-dotnet-service --url -n default)/WeatherForecast
     tests:

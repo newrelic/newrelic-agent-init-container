@@ -76,6 +76,8 @@ test: build-initcontainer build-testapp check-language-arg
 	helm install test-deployment ${REPO_ROOT}/tests/${INITCONTAINER_LANGUAGE}/chart/
 	sleep 3
 	kubectl wait --for=condition=Ready -n default --all pods
+# If yq is installed, check for the initcontainer to be visible on the pod spec
+	command -v yq && kubectl get pods --output yaml | yq '.items[].spec.initContainers[].name' | grep -q "newrelic-instrumentation-" || $$(echo "Operator failed to attach initcontainer." >&2; exit 1)
 	minikube service test-app-${INITCONTAINER_LANGUAGE}-service -n default
 
 # View test app container logs
