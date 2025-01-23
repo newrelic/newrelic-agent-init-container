@@ -1,5 +1,5 @@
 ---
-apiVersion: newrelic.com/v1alpha2
+apiVersion: newrelic.com/v1beta1
 kind: Instrumentation
 metadata:
   name: newrelic-instrumentation-python
