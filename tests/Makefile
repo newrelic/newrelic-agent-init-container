@@ -46,7 +46,7 @@ operator-local:
 		--set=controllerManager.manager.image.pullPolicy=Never \
 		--set=controllerManager.manager.image.repository=e2e/k8s-agents-operator \
 		--set=controllerManager.manager.image.version=e2e
-	sleep 5
+	sleep 30
 	kubectl wait --for=condition=Ready pods $$(kubectl get pods | grep k8s-agents-operator | cut -d" " -f1)
 
 # Set license key in default namespace
@@ -71,10 +71,15 @@ build-testapp: check-language-arg
 # Deploy and open test app in browser
 .PHONY: test
 test: build-initcontainer build-testapp check-language-arg
-	helm uninstall test-deployment --ignore-not-found
-	sleep 1
-	helm install test-deployment ${REPO_ROOT}/tests/${INITCONTAINER_LANGUAGE}/chart/
-	sleep 3
+# helm uninstall test-deployment --ignore-not-found
+# sleep 5
+# helm install test-deployment ${REPO_ROOT}/tests/${INITCONTAINER_LANGUAGE}/chart/
+# sleep 5
+# kubectl delete pods $$(kubectl get pods -n default | grep test-app- | cut -d" " -f1)
+# sleep 5
+# helm install --force test-deployment ${REPO_ROOT}/tests/${INITCONTAINER_LANGUAGE}/chart/
+# sleep 5
+	
 	kubectl wait --for=condition=Ready -n default --all pods
 # If yq is installed, check for the initcontainer to be visible on the pod spec
 	command -v yq && kubectl get pods --output yaml | yq '.items[].spec.initContainers[].name' | grep -q "newrelic-instrumentation-" || $$(echo "Operator failed to attach initcontainer." >&2; exit 1)

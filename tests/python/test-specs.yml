@@ -3,10 +3,17 @@ custom_test_key: tags.testKey
 scenarios:
   - description: This scenario will verify that a transaction is reported by the test app after a curl request
     before:
+      # Deploy test app chart
       - helm install test-python ./chart/ --set=scenarioTag="${SCENARIO_TAG}" -n default
       - sleep 5
+      # Recreate test app pod to ensure instrumentation resource is used
+      - kubectl delete pods -l "app=test-app-python"
+      - sleep 5
+      # Wait for pods to pass healthchecks
       - kubectl wait --for=condition=Ready -n default --all pods --timeout=2m
-      - kubectl get pods --output yaml | yq '.items[].spec.initContainers[].name' | grep -q "newrelic-instrumentation-" || $(echo "Operator failed to attach initcontainer." >&2; exit 1)
+      # Ensure initcontainer was attached by operator
+      - kubectl get pods --output yaml | yq '.items[].spec.initContainers[].name' | grep -q "newrelic-instrumentation-" || { echo -e "===== Operator failed to attach initcontainer. =====" >&2; exit 1; }
+      # Send traffic to test app to generate transactions
       - curl --fail-with-body $(minikube service test-app-python-service --url -n default)
     tests:
       nrqls:
