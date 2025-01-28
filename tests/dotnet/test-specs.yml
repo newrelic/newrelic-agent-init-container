@@ -1,12 +1,21 @@
-description: End-to-end tests for dotnet initcontainer
+description: End-to-end tests for .NET initcontainer
 custom_test_key: tags.testKey
 scenarios:
   - description: This scenario will verify that a transaction is reported by the test app after a curl request
     before:
+      # Deploy test app chart
       - helm install test-dotnet ./chart/ --set=scenarioTag="${SCENARIO_TAG}" -n default
       - sleep 5
-      - kubectl wait --for=condition=Ready -n default --all pods
-      - sleep 15 # give the agent time to connect
+      # Recreate test app pod to ensure instrumentation resource is used
+      - kubectl delete pods -l "app=test-app-dotnet"
+      # Wait for pods to pass healthchecks
+      - sleep 5
+      - kubectl wait --for=condition=Ready -n default --all pods --timeout=2m
+      # Ensure initcontainer was attached by operator
+      - kubectl get pods --output yaml | yq '.items[].spec.initContainers[].name' | grep -q "newrelic-instrumentation-" || { echo -e "===== Operator failed to attach initcontainer. =====" >&2; exit 1; }
+      # Give the agent time to connect
+      - sleep 15
+      # Send traffic to test app to generate transactions
       - curl --fail-with-body $(minikube service test-app-dotnet-service --url -n default)/WeatherForecast
     tests:
       nrqls:
