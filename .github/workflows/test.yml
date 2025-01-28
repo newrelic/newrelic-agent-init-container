@@ -82,6 +82,7 @@ jobs:
             --set=controllerManager.manager.image.version=${{ inputs.K8S_OPERATOR_IMAGE_TAG }}
           sleep 5
           kubectl wait --for=condition=Ready -n default --all pods
+          sleep 30
 
       - name: Build init container
         run: |
