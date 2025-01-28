@@ -1,4 +1,4 @@
-description: End-to-end tests for python initcontainer
+description: End-to-end tests for Python initcontainer
 custom_test_key: tags.testKey
 scenarios:
   - description: This scenario will verify that a transaction is reported by the test app after a curl request
@@ -8,8 +8,8 @@ scenarios:
       - sleep 5
       # Recreate test app pod to ensure instrumentation resource is used
       - kubectl delete pods -l "app=test-app-python"
-      - sleep 5
       # Wait for pods to pass healthchecks
+      - sleep 5
       - kubectl wait --for=condition=Ready -n default --all pods --timeout=2m
       # Ensure initcontainer was attached by operator
       - kubectl get pods --output yaml | yq '.items[].spec.initContainers[].name' | grep -q "newrelic-instrumentation-" || { echo -e "===== Operator failed to attach initcontainer. =====" >&2; exit 1; }
