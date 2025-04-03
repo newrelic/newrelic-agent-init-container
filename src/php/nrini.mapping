@@ -3,6 +3,7 @@ NEW_RELIC_LICENSE:newrelic.license
 NEW_RELIC_LOGFILE:newrelic.logfile
 NEW_RELIC_LOGLEVEL:newrelic.loglevel
 NEW_RELIC_HIGH_SECURITY:newrelic.high_security
+NEW_RELIC_APPNAME:newrelic.appname
 NEW_RELIC_APP_NAME:newrelic.appname
 NEW_RELIC_PROCESS_HOST_DISPLAY_NAME:newrelic.process_host.display_name
 NEW_RELIC_DAEMON_LOGFILE:newrelic.daemon.logfile
