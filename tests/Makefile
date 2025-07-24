@@ -98,7 +98,7 @@ test: build-initcontainer build-testapp check-language-arg
 		which -s yq && { \
 			kubectl get pods --output yaml | yq '.items[].spec.initContainers[].name' | grep -q "newrelic-instrumentation-" \
 				&& echo "===== Initcontainer successfully attached. =====" \
-				|| { echo -e "===== Operator failed to attach initcontainer. =====" >&2; exit 1; } } \
+				|| { echo "===== Operator failed to attach initcontainer. =====" >&2; exit 1; } } \
 			|| echo "yq is not installed. Skipping."
 	@echo "===== Opening tunnel to test app and opening web browser. ====="
 	@minikube service test-app-${INITCONTAINER_LANGUAGE}-service -n default
