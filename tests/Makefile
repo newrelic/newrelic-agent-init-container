@@ -2,9 +2,14 @@
 MAKEFILE_DIR:=$(dir $(realpath $(firstword ${MAKEFILE_LIST})))
 REPO_ROOT:=$(realpath ${MAKEFILE_DIR}../)
 
-# Path to the local copy of the repo newrelic/k8s-agents-operator.
-# Only required if building and testing the operator from source.
-LOCAL_OPERATOR_REPO_PATH?=${REPO_ROOT}/../k8s-agents-operator
+# To build a local copy of the operator, set this to the path to the local copy of the repo.
+K8S_AGENTS_OPERATOR_REPO_PATH?=
+
+# To deploy an exact version of the k8s-agents-operator, set this to the version number.
+K8S_AGENTS_OPERATOR_VERSION?=
+
+# Set this to determine which language's test app to build and deploy.
+INITCONTAINER_LANGUAGE?=
 
 .PHONY: default
 default: all
@@ -27,31 +32,30 @@ operator:
 	@sleep 1
 	@echo "===== Adding and updating operator helm chart. ====="
 	@helm repo add --force-update k8s-agents-operator https://newrelic.github.io/k8s-agents-operator
+ifdef K8S_AGENTS_OPERATOR_VERSION  # If this is set, use with this exact chart and container version.
 	@echo "===== Deploying operator to minikube cluster. ====="
-	@helm upgrade --install k8s-agents-operator k8s-agents-operator/k8s-agents-operator \
+	@helm upgrade --install --version ${K8S_AGENTS_OPERATOR_VERSION} k8s-agents-operator k8s-agents-operator/k8s-agents-operator \
 		--set=licenseKey=${NEW_RELIC_LICENSE_KEY} \
-		--set=controllerManager.manager.image.version=edge
-	@sleep 5
-	@kubectl wait --for=condition=Ready pods $$(kubectl get pods | grep k8s-agents-operator | cut -d" " -f1)
-	@echo "===== Giving operator time to generate certificates. ====="
-	@sleep 30
-
-# Build and install local copy of k8s-agents-operator
-.PHONY: operator-local
-operator-local:
+		--set=newRelicHost=${NEW_RELIC_HOST} \
+		--set=controllerManager.manager.image.version=${K8S_AGENTS_OPERATOR_VERSION}
+else ifdef K8S_AGENTS_OPERATOR_REPO_PATH  # If this is set, build and use a local copy of the operator.
 	@echo "===== Building operator container image. ====="
-	@eval $$(minikube docker-env --shell=bash) && \
-		docker build ${LOCAL_OPERATOR_REPO_PATH}/ -t e2e/k8s-agents-operator:e2e
-	@echo "===== Removing any existing operator deployments. ====="
-	@helm uninstall k8s-agents-operator --ignore-not-found
-	@sleep 1
+	@eval $$(minikube -p minikube docker-env --shell=bash) && \
+		docker build ${K8S_AGENTS_OPERATOR_REPO_PATH}/ -t e2e/k8s-agents-operator:e2e
 	@echo "===== Deploying operator to minikube cluster. ====="
-	@helm upgrade --install k8s-agents-operator ${LOCAL_OPERATOR_REPO_PATH}/charts/k8s-agents-operator/ \
+	@helm upgrade --install k8s-agents-operator ${K8S_AGENTS_OPERATOR_REPO_PATH}/charts/k8s-agents-operator/ \
 		--set=licenseKey=${NEW_RELIC_LICENSE_KEY} \
 		--set=newRelicHost=${NEW_RELIC_HOST} \
 		--set=controllerManager.manager.image.pullPolicy=Never \
 		--set=controllerManager.manager.image.repository=e2e/k8s-agents-operator \
 		--set=controllerManager.manager.image.version=e2e
+else # If neither are specified, use the edge version.
+	@echo "===== Deploying operator to minikube cluster. ====="
+	@helm upgrade --install k8s-agents-operator k8s-agents-operator/k8s-agents-operator \
+		--set=licenseKey=${NEW_RELIC_LICENSE_KEY} \
+		--set=newRelicHost=${NEW_RELIC_HOST} \
+		--set=controllerManager.manager.image.version=edge
+endif
 	@sleep 5
 	@kubectl wait --for=condition=Ready pods $$(kubectl get pods | grep k8s-agents-operator | cut -d" " -f1)
 	@echo "===== Giving operator time to generate certificates. ====="
