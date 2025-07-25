@@ -47,9 +47,11 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.7", "3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+        architecture: ["linux/amd64", "linux/arm64"]
     with:
       INITCONTAINER_LANGUAGE: python
       INITCONTAINER_BUILD_ARGS: RUNTIME_VERSION=${{ matrix.python-version }}-alpine
+      ARCHITECTURE: ${{ matrix.architecture }}
       TEST_APP_BUILD_ARGS: RUNTIME_VERSION=${{ matrix.python-version }}
 
   publish:
