@@ -50,9 +50,14 @@ jobs:
       fail-fast: false
       matrix:
         node-version: [20, 22, 24]
+        architecture: ["linux/amd64", "linux/arm64", "linux/arm"]
+        exclude:
+          - node-version: 24
+            architecture: linux/arm
     with:
       INITCONTAINER_LANGUAGE: nodejs
       INITCONTAINER_BUILD_ARGS: RUNTIME_VERSION=${{ matrix.node-version }}
+      ARCHITECTURE: ${{ matrix.architecture }}
       TEST_APP_BUILD_ARGS: RUNTIME_VERSION=${{ matrix.node-version }}
 
   publish:
@@ -63,11 +68,18 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [20, 22, 24]
+        include:
+          - node-version: 20
+            architecture: "linux/amd64,linux/arm64,linux/arm"
+          - node-version: 22
+            architecture: "linux/amd64,linux/arm64,linux/arm"
+          - node-version: 24
+            architecture: "linux/amd64,linux/arm64"
     with:
       INITCONTAINER_LANGUAGE: nodejs
       DOCKER_IMAGE_NAME: newrelic/newrelic-node-init
       DOCKER_IMAGE_TAG_SUFFIX: nodejs${{ matrix.node-version }}x
-      DOCKER_IMAGE_TAG_IS_DEFAULT_SUFFIX: ${{ matrix.node-version == 22 }}
+      DOCKER_IMAGE_TAG_IS_DEFAULT_SUFFIX: ${{ matrix.node-version == 24 }}
+      ARCHITECTURE: ${{ matrix.architecture }}
       BUILD_ARGS: |
         RUNTIME_VERSION=${{ matrix.node-version }}
