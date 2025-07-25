@@ -96,7 +96,7 @@ test: build-initcontainer build-testapp check-language-arg
 # If yq is installed, check for the initcontainer to be visible on the pod spec
 	@echo "===== Ensuring initcontainer was successfully attached by operator. =====" && \
 		which -s yq && { \
-			kubectl get pods --output yaml | yq '.items[].spec.initContainers[].name' | grep -q "newrelic-instrumentation-" \
+			kubectl get pods --output yaml | yq '.items[].spec.initContainers[].name' | grep -q "nri-${INITCONTAINER_LANGUAGE}--test-app-${INITCONTAINER_LANGUAGE}" \
 				&& echo "===== Initcontainer successfully attached. =====" \
 				|| { echo -e "===== Operator failed to attach initcontainer. =====" >&2; exit 1; } } \
 			|| echo "yq is not installed. Skipping."

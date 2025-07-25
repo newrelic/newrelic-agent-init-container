@@ -12,7 +12,7 @@ scenarios:
       - sleep 120
       - kubectl wait --for=condition=Ready -n default --all pods --timeout=2m
       # Ensure initcontainer was attached by operator
-      - kubectl get pods --output yaml | yq '.items[].spec.initContainers[].name' | grep -q "newrelic-instrumentation-" || { echo -e "===== Operator failed to attach initcontainer. =====" >&2; exit 1; }
+      - kubectl get pods --output yaml | yq '.items[].spec.initContainers[].name' | grep -q "nri-java--test-app-java" || { echo -e "===== Operator failed to attach initcontainer. =====" >&2; exit 1; }
       # Send traffic to test app to generate transactions
       - curl --fail-with-body $(minikube service test-app-java-service --url -n default)
     tests:
