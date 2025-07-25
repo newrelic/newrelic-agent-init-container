@@ -50,9 +50,14 @@ jobs:
       fail-fast: false
       matrix:
         node-version: [20, 22, 24]
+        architecture: ["linux/amd64", "linux/arm64", "linux/arm"]
+        exclude:
+          - node-version: 24
+            architecture: linux/arm
     with:
       INITCONTAINER_LANGUAGE: nodejs
       INITCONTAINER_BUILD_ARGS: RUNTIME_VERSION=${{ matrix.node-version }}
+      ARCHITECTURE: ${{ matrix.architecture }}
       TEST_APP_BUILD_ARGS: RUNTIME_VERSION=${{ matrix.node-version }}
 
   publish:
