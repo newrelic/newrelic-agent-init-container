@@ -14,6 +14,7 @@ scenarios:
       # Ensure initcontainer was attached by operator
       - kubectl get pods --output yaml | yq '.items[].spec.initContainers[].name' | grep -q "nri-nodejs--test-app-nodejs" || { echo -e "===== Operator failed to attach initcontainer. =====" >&2; exit 1; }
       # Send traffic to test app to generate transactions
+      - sleep 10
       - curl --fail-with-body $(minikube service test-app-nodejs-service --url -n default)
     tests:
       nrqls:
