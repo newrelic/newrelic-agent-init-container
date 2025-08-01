@@ -12,7 +12,7 @@ ARG AGENT_VERSION
 ADD Gemfile .
 RUN BUNDLE_PATH=workspace bundle install
 
-FROM busybox:stable@sha256:7edf5efe6b86dbf01ccc3c76b32a37a8e23b84e6bad81ce8ae8c221fa456fda8
+FROM busybox:stable@sha256:31f3955f475e40c62c6d4209f09fd9738cf6cadfc0f4aa76ba2d4d86f061c5b5
 
 # Copy build artifacts from previous
 COPY --from=build /operator-build /operator-build
