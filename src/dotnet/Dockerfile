@@ -24,6 +24,6 @@ RUN /dotnet-agent-download.sh $TARGETARCH $AGENT_VERSION
 # replace agentinfo.json from the tarball with one that identifies this as a k8s-operator install type
 COPY agentinfo.json .
 
-FROM busybox:stable@sha256:31f3955f475e40c62c6d4209f09fd9738cf6cadfc0f4aa76ba2d4d86f061c5b5
+FROM busybox:stable@sha256:303337d3d52898b33018796d760d3a01c2dcc87973dd66ec22fe78ae1e8429c9
 COPY --from=build /instrumentation /instrumentation
 RUN chmod -R go+r /instrumentation
