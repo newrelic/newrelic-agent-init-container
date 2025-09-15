@@ -1,0 +1,107 @@
+# Copyright New Relic, Inc.
+# SPDX-License-Identifier: Apache-2.0
+---
+  name: Windows Init Container Publish
+  
+  on:
+    workflow_call:
+      inputs:
+        INITCONTAINER_LANGUAGE:
+          required: true
+          type: string
+        TARGETARCH:
+          description: "Target Windows architecture for the build (e.g. 2022, 2025)"
+          required: true
+          type: string
+        DOCKER_IMAGE_NAME:
+          description: "Name for the published docker image, defaults to newrelic/newrelic-<INITCONTAINER_LANGUAGE>-init"
+          required: false
+          type: string
+          default: ""
+        DOCKER_IMAGE_TAG_SUFFIX:
+          description: "Suffix to append to all version tags. (string with no preceding -)"
+          required: false
+          type: string
+          default: ""
+        DOCKER_IMAGE_TAG_IS_DEFAULT_SUFFIX:
+          description: "Boolean indicating if both suffixed and non-suffixed tags should be produced. (true|false)"
+          required: false
+          type: boolean
+          default: false
+  
+  # Declare default permissions as read only.
+  permissions: read-all
+  
+  jobs:
+    publish:
+      runs-on: windows-2025
+  
+      steps:
+        - name: Harden Runner
+          uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
+          with:
+            disable-sudo: true
+            egress-policy: audit
+  
+        - name: Checkout code
+          uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # 4.2.2
+  
+        - name: Extract Agent Version Tags
+          id: version
+          uses: ./.github/actions/extract_agent_version_tags
+          with:
+            tag_suffix: ${{ inputs.DOCKER_IMAGE_TAG_SUFFIX }}
+            is_default_suffix: ${{ inputs.DOCKER_IMAGE_TAG_IS_DEFAULT_SUFFIX }}
+  
+        - name: Generate Docker metadata (tags and labels)
+          id: meta
+          uses: docker/metadata-action@c1e51972afc2121e065aed6d45c65596fe445f3f # 5.8.0
+          with:
+            images: ${{ inputs.DOCKER_IMAGE_NAME || format('newrelic/newrelic-{1}{2}-init', inputs.INITCONTAINER_LANGUAGE, inputs.TARGETARCH) }}
+            flavor: |
+              latest=false
+            tags: ${{ steps.version.outputs.tags }}
+  
+        - name: Login to Docker Hub Container Registry
+          uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # 3.5.0
+          with:
+            username: ${{ secrets.DOCKER_USERNAME }}
+            password: ${{ secrets.DOCKER_TOKEN }}
+  
+        # Used to avoid issues with powershell variable expansion in the build step
+        - name: Prepare Labels
+          id: prep_labels
+          run: |
+            foreach ($label in ($env:DOCKER_METADATA_OUTPUT_LABELS -split "`n")) {
+              if ($label -ne "") {
+                if ($label[-1] -eq "=") {
+                  $label = $label.Substring(0, $label.Length - 1)
+                }
+  
+                $env:LABELS=$env:LABELS + " --label $label"
+              }
+            }
+  
+            $env:LABELS=$env:LABELS.TrimStart()
+            Write-Output "labels=$($env:LABELS)" >> $Env:GITHUB_OUTPUT
+  
+        - name: Build and publish init container image
+          run: |
+            cd src/${{ inputs.INITCONTAINER_LANGUAGE }}/
+  
+            # Build container
+            $env:IMAGE_NAME="local/${{ format('newrelic-{0}{1}-init', inputs.INITCONTAINER_LANGUAGE, inputs.TARGETARCH) }}:latest"
+            
+            Write-Host "docker build ${{ steps.prep_labels.outputs.labels }} --build-arg TARGETARCH=${{ inputs.TARGETARCH }} --build-arg AGENT_VERSION=${{ steps.version.outputs.agent_version }} -t $env:IMAGE_NAME ."
+            docker build ${{ steps.prep_labels.outputs.labels }} --build-arg TARGETARCH=${{ inputs.TARGETARCH }} --build-arg AGENT_VERSION=${{ steps.version.outputs.agent_version }} -t $env:IMAGE_NAME .
+  
+            # tag container
+            foreach ($tag in ($env:DOCKER_METADATA_OUTPUT_TAGS -split "`n")) {
+              if ($tag -ne "") {
+                docker tag $env:IMAGE_NAME $tag
+              }
+            }
+  
+            # push container with all tags
+            docker image push --all-tags ${{ format('newrelic/newrelic-{1}{2}-init', inputs.INITCONTAINER_LANGUAGE, inputs.TARGETARCH) }}
+  

@@ -1,7 +1,7 @@
 # Copyright New Relic, Inc.
 # SPDX-License-Identifier: Apache-2.0
 ---
-name: Init Container Publish
+name: Linux Init Container Publish
 
 on:
   workflow_call:

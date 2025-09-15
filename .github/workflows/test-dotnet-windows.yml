@@ -1,0 +1,86 @@
+# Copyright New Relic, Inc.
+# SPDX-License-Identifier: Apache-2.0
+---
+name: Windows Init Container Test
+
+on:
+  workflow_call:
+    inputs:
+      TARGETARCH:
+        description: "Target Windows architecture for the build (e.g. 2022, 2025)"
+        required: true
+        type: string
+
+# Declare default permissions as read only.
+permissions: read-all
+
+jobs:
+  test:
+    name: Run basic tests for .NET on Windows ${{ inputs.TARGETARCH }}
+    runs-on: windows-2025
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # 5.0.0
+        with:
+          persist-credentials: false
+
+      # Gives higher rate limits for image pulls
+      - name: Login to Docker Hub Container Registry (Read Only)
+        uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # 3.5.0
+        # skip login for workflows triggered by Dependabot 
+        if: github.actor != 'dependabot[bot]' 
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN_READ_ONLY }}
+
+      - name: Extract Agent Version from Release Tag
+        id: version
+        if: github.event_name == 'release'
+        run: |
+          $refName = "${{ github.ref_name }}"
+          $agentVersion = $refName -replace '^v', '' -replace '_[a-zA-Z]*', '' -replace '\.[0-9]*$', ''
+          "AGENT_VERSION=$agentVersion" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Build and init container image
+        run: |
+          cd src/dotnet-windows
+
+          # Build container
+          $env:IMAGE_NAME="local/${{ format('newrelic-{0}{1}-init', 'dotnet-windows', inputs.TARGETARCH) }}:latest"
+          
+          Write-Host "docker build --build-arg TARGETARCH=${{ inputs.TARGETARCH }} --build-arg AGENT_VERSION=${{ env.AGENT_VERSION }} -t $env:IMAGE_NAME ."
+          docker build --build-arg TARGETARCH=${{ inputs.TARGETARCH }} --build-arg AGENT_VERSION=${{ env.AGENT_VERSION }} -t $env:IMAGE_NAME .
+
+      # Not meant to be exhaustive, just a basic check that the image was built correctly
+      - name: Run basic tests
+        env:
+          FILES_TO_CHECK: |
+            C:\instrumentation\agentinfo.json
+            C:\instrumentation\netcore\agentinfo.json
+            C:\instrumentation\netframework\agentinfo.json
+            C:\instrumentation\LICENSE.txt
+            C:\instrumentation\README.md
+            C:\instrumentation\THIRD_PARTY_NOTICES.txt
+            C:\instrumentation\netcore\newrelic.config
+            C:\instrumentation\netcore\NewRelic.Profiler.dll
+            C:\instrumentation\netcore\extensions\extension.xsd
+            C:\instrumentation\netcore\extensions\NewRelic.Providers.Wrapper.AspNetCore.dll
+            C:\instrumentation\netcore\extensions\NewRelic.Providers.Wrapper.AspNetCore.Instrumentation.xml
+            C:\instrumentation\netframework\newrelic.config
+            C:\instrumentation\netframework\NewRelic.Profiler.dll
+            C:\instrumentation\netframework\extensions\extension.xsd
+            C:\instrumentation\netframework\extensions\NewRelic.Providers.Wrapper.AspNet.dll
+            C:\instrumentation\netframework\extensions\NewRelic.Providers.Wrapper.AspNet.Instrumentation.xml
+        run: |
+          # Basic test to ensure the image was built correctly
+          $env:IMAGE_NAME="local/${{ format('newrelic-{0}{1}-init', 'dotnet-windows', inputs.TARGETARCH) }}:latest"
+
+          Write-Host "Running container $env:IMAGE_NAME"
+
+          $files = $env:FILES_TO_CHECK.Trim() -split '\s+'
+          $command = ($files | ForEach-Object { "dir $_" }) -join ' && '
+
+          # Checks if each file exists and the docker command succeeds if they do
+          Write-Host "Running command in container: $command"
+          docker run --rm --entrypoint cmd $env:IMAGE_NAME /c "$command"

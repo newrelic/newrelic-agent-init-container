@@ -55,3 +55,38 @@ jobs:
     with:
       INITCONTAINER_LANGUAGE: dotnet
       ARCHITECTURE: linux/amd64,linux/arm64
+
+  # publish-windows,yml cannot runs the usual tests since it relies on minikube which does not support Windows pods.
+
+  test-dotnet-windows2022:
+    if: github.event_name != 'release' || (github.event_name == 'release' && endsWith(github.ref, '_dotnet')) # Skip everything if this isn't .NET
+    uses: ./.github/workflows/test-dotnet-windows.yml
+    secrets: inherit
+    with:
+      TARGETARCH: 2022
+
+  test-dotnet-windows2025:
+    if: github.event_name != 'release' || (github.event_name == 'release' && endsWith(github.ref, '_dotnet')) # Skip everything if this isn't .NET
+    uses: ./.github/workflows/test-dotnet-windows.yml
+    secrets: inherit
+    with:
+      TARGETARCH: 2025
+
+  publish-windows2022:
+    if: github.event_name == 'release' && endsWith(github.ref, '_dotnet') # Skip everything if this isn't .NET
+    needs: test-dotnet-windows2022
+    uses: ./.github/workflows/publish-windows.yml
+    secrets: inherit
+    with:
+      INITCONTAINER_LANGUAGE: dotnet-windows
+      TARGETARCH: 2022
+
+  publish-windows2025:
+    if: github.event_name == 'release' && endsWith(github.ref, '_dotnet') # Skip everything if this isn't .NET
+    needs: test-dotnet-windows2025
+    uses: ./.github/workflows/publish-windows.yml
+    secrets: inherit
+    with:
+      INITCONTAINER_LANGUAGE: dotnet-windows
+      TARGETARCH: 2025
+    
