@@ -15,13 +15,14 @@ FROM mcr.microsoft.com/windows/nanoserver:ltsc2025@sha256:f49449a998f8ba4b1bd5b0
 # Set the working directory
 WORKDIR C:\\instrumentation
 
+# Copy batch script to image
+COPY dotnet-agent-download.cmd /
+
 # Argument to specify the version of the New Relic agent
-ARG AGENT_VERSION
+ARG AGENT_VERSION="latest"
 
 # Download and extract the New Relic .NET agent using command prompt's curl.exe
-RUN curl.exe -L -o newrelic-agent.zip https://download.newrelic.com/dot_net_agent/latest_release/NewRelicDotNetAgent_%AGENT_VERSION%_x64.zip \
-    && tar.exe -xzf newrelic-agent.zip \
-    && del newrelic-agent.zip
+RUN c:\dotnet-agent-download.cmd %AGENT_VERSION% || exit 1
 
 COPY agentinfo.json .
 COPY agentinfo.json .\\netcore\\agentinfo.json

@@ -18,6 +18,8 @@ jobs:
   test:
     name: Run basic tests for .NET on Windows ${{ inputs.TARGETARCH }}
     runs-on: windows-2025
+    env:
+      AGENT_VERSION: latest
 
     steps:
       - name: Checkout code
@@ -48,7 +50,7 @@ jobs:
 
           # Build container
           $env:IMAGE_NAME="local/${{ format('newrelic-{0}{1}-init', 'dotnet-windows', inputs.TARGETARCH) }}:latest"
-          
+
           Write-Host "docker build --build-arg TARGETARCH=${{ inputs.TARGETARCH }} --build-arg AGENT_VERSION=${{ env.AGENT_VERSION }} -t $env:IMAGE_NAME ."
           docker build --build-arg TARGETARCH=${{ inputs.TARGETARCH }} --build-arg AGENT_VERSION=${{ env.AGENT_VERSION }} -t $env:IMAGE_NAME .
 
