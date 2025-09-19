@@ -73,7 +73,7 @@ jobs:
       TARGETARCH: 2025
 
   publish-windows2022:
-    if: github.event_name == 'release' && endsWith(github.ref, '_dotnet') # Skip everything if this isn't .NET
+    if: github.event_name != 'release' || (github.event_name == 'release' && endsWith(github.ref, '_dotnet')) # Skip everything if this isn't .NET
     needs: test-dotnet-windows2022
     uses: ./.github/workflows/publish-windows.yml
     secrets: inherit
@@ -82,7 +82,7 @@ jobs:
       TARGETARCH: 2022
 
   publish-windows2025:
-    if: github.event_name == 'release' && endsWith(github.ref, '_dotnet') # Skip everything if this isn't .NET
+    if: github.event_name != 'release' || (github.event_name == 'release' && endsWith(github.ref, '_dotnet')) # Skip everything if this isn't .NET
     needs: test-dotnet-windows2025
     uses: ./.github/workflows/publish-windows.yml
     secrets: inherit
