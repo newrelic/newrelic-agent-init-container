@@ -15,14 +15,14 @@ FROM mcr.microsoft.com/windows/nanoserver:ltsc2025@sha256:f49449a998f8ba4b1bd5b0
 # Set the working directory
 WORKDIR C:\\instrumentation
 
-# Copy batch script to image
+# Copy batch script to image to root of C:
 COPY dotnet-agent-download.cmd /
 
 # Argument to specify the version of the New Relic agent
 ARG AGENT_VERSION="latest"
 
 # Download and extract the New Relic .NET agent using command prompt's curl.exe
-RUN c:\dotnet-agent-download.cmd %AGENT_VERSION% || exit 1
+RUN C:\\dotnet-agent-download.cmd %AGENT_VERSION% || exit 1
 
 COPY agentinfo.json .
 COPY agentinfo.json .\\netcore\\agentinfo.json

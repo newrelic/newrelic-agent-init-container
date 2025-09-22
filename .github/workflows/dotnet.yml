@@ -16,9 +16,9 @@ on:
       - 'tests/dotnet/**'
       - '.github/workflows/dotnet.yml'
       - '.github/workflows/publish.yml'
-      - '.github\workflows\publish-windows.yml'
+      - '.github/workflows/publish-windows.yml'
       - '.github/workflows/test.yml'
-      - '.github\workflows\test-dotnet-windows.yml'
+      - '.github/workflows/test-dotnet-windows.yml'
       - '.github/actions/**'
   push:
     paths:
@@ -27,9 +27,9 @@ on:
       - 'tests/dotnet/**'
       - '.github/workflows/dotnet.yml'
       - '.github/workflows/publish.yml'
-      - '.github\workflows\publish-windows.yml'
+      - '.github/workflows/publish-windows.yml'
       - '.github/workflows/test.yml'
-      - '.github\workflows\test-dotnet-windows.yml'
+      - '.github/workflows/test-dotnet-windows.yml'
       - '.github/actions/**'
     branches:
       - main
