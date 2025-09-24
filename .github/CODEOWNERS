@@ -3,8 +3,11 @@
 
 # Team based ownership
 /.github/workflows/dotnet.yml @newrelic/dotnet
+/.github/workflows/publish-windows.yml @newrelic/dotnet
+/.github/workflows/test-dotnet-windows.yml @newrelic/dotnet
 /src/dotnet/ @newrelic/dotnet
 /tests/dotnet/ @newrelic/dotnet
+/src/dotnet-windows/ @newrelic/dotnet
 
 /.github/workflows/java.yml @newrelic/java
 /src/java/ @newrelic/java
