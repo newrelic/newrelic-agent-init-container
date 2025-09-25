@@ -33,7 +33,7 @@ permissions: read-all
 jobs:
   test:
     name: Run E2E tests for ${{ inputs.INITCONTAINER_LANGUAGE }}
-    runs-on: ${{ startsWith(inputs.ARCHITECTURE, 'linux/arm') && 'ubuntu-latest-arm' || 'ubuntu-latest'}}
+    runs-on: ${{ startsWith(inputs.ARCHITECTURE, 'linux/arm') && 'ubuntu-24.04-arm' || 'ubuntu-24.04'}}
     env:
       TEST_APP_HELM_CHART_ARGS: ${{ inputs.TEST_APP_HELM_CHART_ARGS }}
 
