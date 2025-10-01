@@ -20,6 +20,16 @@ updates:
       interval: monthly
 
   - package-ecosystem: docker
+    directory: /src/dotnet-windows
+    schedule:
+      interval: monthly
+# No tests for dotnet-windows currently; save for future use      
+#  - package-ecosystem: docker
+#    directory: /tests/dotnet-windows
+#    schedule:
+#      interval: monthly
+      
+  - package-ecosystem: docker
     directory: /src/java
     schedule:
       interval: monthly
