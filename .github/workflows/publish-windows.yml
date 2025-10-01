@@ -57,7 +57,7 @@
           id: meta
           uses: docker/metadata-action@c1e51972afc2121e065aed6d45c65596fe445f3f # 5.8.0
           with:
-            images: ${{ inputs.DOCKER_IMAGE_NAME || format('newrelic/newrelic-{1}{2}-init', inputs.INITCONTAINER_LANGUAGE, inputs.TARGETARCH) }}
+            images: ${{ inputs.DOCKER_IMAGE_NAME || format('newrelic/newrelic-{0}{1}-init', inputs.INITCONTAINER_LANGUAGE, inputs.TARGETARCH) }}
             flavor: |
               latest=false
             tags: ${{ steps.version.outputs.tags }}
@@ -103,5 +103,5 @@
             }
   
             # push container with all tags
-            docker image push --all-tags ${{ format('newrelic/newrelic-{1}{2}-init', inputs.INITCONTAINER_LANGUAGE, inputs.TARGETARCH) }}
+            docker image push --all-tags ${{ format('newrelic/newrelic-{0}{1}-init', inputs.INITCONTAINER_LANGUAGE, inputs.TARGETARCH) }}
   
