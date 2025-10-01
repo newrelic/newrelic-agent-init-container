@@ -45,7 +45,7 @@ jobs:
 
       # Gives higher rate limits for image pulls
       - name: Login to Docker Hub Container Registry (Read Only)
-        uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # 3.5.0
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # 3.6.0
         # skip login for workflows triggered by Dependabot 
         if: github.actor != 'dependabot[bot]' 
         with:
