@@ -96,12 +96,17 @@
             docker build ${{ steps.prep_labels.outputs.labels }} --build-arg TARGETARCH=${{ inputs.TARGETARCH }} --build-arg AGENT_VERSION=${{ steps.version.outputs.agent_version }} -t $env:IMAGE_NAME .
   
             # tag container
+            Write-Host "Starting tagging process for $env:IMAGE_NAME"
             foreach ($tag in ($env:DOCKER_METADATA_OUTPUT_TAGS -split "`n")) {
               if ($tag -ne "") {
+                Write-Host "docker tag $env:IMAGE_NAME $tag"
                 docker tag $env:IMAGE_NAME $tag
               }
             }
+
+            Write-Host "Finished tagging process for $env:IMAGE_NAME"
   
             # push container with all tags
+            Write-Host "docker image push --all-tags ${{ format('newrelic/newrelic-{0}{1}-init', inputs.INITCONTAINER_LANGUAGE, inputs.TARGETARCH) }}"
             docker image push --all-tags ${{ format('newrelic/newrelic-{0}{1}-init', inputs.INITCONTAINER_LANGUAGE, inputs.TARGETARCH) }}
   
