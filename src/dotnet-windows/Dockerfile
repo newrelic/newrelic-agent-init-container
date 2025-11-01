@@ -10,7 +10,7 @@
 ARG TARGETARCH
 
 # This container can be pinned to latest OS since all it does is get the data which is OS agnostic.
-FROM mcr.microsoft.com/windows/nanoserver:ltsc2025@sha256:252ba371c2f50ae797d81ae9d87405b55119714817fead9f406218b556e3ddeb as build
+FROM mcr.microsoft.com/windows/nanoserver:ltsc2025@sha256:2c49bcfc2b32e56ef272c3ab4bb77a7653dd617d3a0c1d3afdfc7d67d971c739 as build
 
 # Set the working directory
 WORKDIR C:\\instrumentation
