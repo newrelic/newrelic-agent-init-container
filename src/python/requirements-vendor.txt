@@ -1,1 +1,1 @@
-pip==25.0.1  # Last supported version for Python 3.8
+pip==25.3  # Last supported version for Python 3.8
