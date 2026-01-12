@@ -20,6 +20,6 @@ RUN npm install newrelic@${AGENT_VERSION}
 COPY newrelicinstrumentation.js .
 
 # initcontainer
-FROM busybox:stable@sha256:7c3c3cea5d4d6133d6a694d23382f6a7b32652f23855abdba3eb039ca5995447
+FROM busybox:stable@sha256:71b79694b71639e633452f57fd9de40595d524de308349218d9a6a144b40be02
 COPY --from=build /instrumentation /instrumentation
 RUN chmod -R go+r /instrumentation
