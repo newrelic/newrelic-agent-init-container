@@ -3,7 +3,7 @@
 #   one init container will be created to copy all the content in `/instrumentation` directory to your app's container.
 # - Grant the necessary access to `/instrumentation` directory. `chmod -R go+r /instrumentation`
 
-FROM ruby:latest@sha256:d31b448100c85100876c4a5290375cca26e231d915d7a037599e33e02238560c AS build
+FROM ruby:latest@sha256:45ca46a37e16d4f0b383ff6f400edc7e096361ac05c91ead86481ecc332e665e AS build
 WORKDIR /operator-build
 
 ARG AGENT_VERSION
