@@ -8,7 +8,7 @@
 #    CORECLR_PROFILER_PATH=%InstallationLocation%/libNewRelicProfiler.so
 #    CORECLR_NEWRELIC_HOME=%InstallationLocation% 
 
-FROM alpine:latest@sha256:865b95f46d98cf867a156fe4a135ad3fe50d2056aa3f25ed31662dff6da4eb62 as build
+FROM alpine:latest@sha256:25109184c71bdad752c8312a8623239686a9a2071e8825f20acb8f2198c3f659 as build
 RUN apk update && apk add ca-certificates
 WORKDIR /instrumentation
 
