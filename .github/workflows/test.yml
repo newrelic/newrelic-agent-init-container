@@ -39,13 +39,13 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # 6.0.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # 6.0.2
         with:
           persist-credentials: false
 
       # Gives higher rate limits for image pulls
       - name: Login to Docker Hub Container Registry (Read Only)
-        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # 3.6.0
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # 3.7.0
         # skip login for workflows triggered by Dependabot 
         if: github.actor != 'dependabot[bot]' 
         with:
