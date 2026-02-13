@@ -1,5 +1,5 @@
 # BUILD STAGE
-FROM eclipse-temurin:21-jdk-jammy as build
+FROM eclipse-temurin:25-jdk-jammy as build
 
 # Install git
 RUN apt update
@@ -13,7 +13,7 @@ RUN cd ./spring-petclinic && git checkout 923e2b7aa331b8194a6579da99fb6388f15d7f
 RUN cd ./spring-petclinic && ./mvnw -Dmaven.test.skip=true clean package
 
 # PRODUCTION STAGE
-FROM eclipse-temurin:21-jre-jammy as production
+FROM eclipse-temurin:25-jre-jammy as production
 
 # Create work directory
 WORKDIR /petclinic-app
