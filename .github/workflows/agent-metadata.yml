@@ -45,6 +45,8 @@ on:
         required: true
       FC_SYS_ID_PR_KEY:
         required: true
+      APM_CONTROL_NR_LICENSE_KEY_STAGING:
+        required: false
 
 jobs:
   test-agent-metadata-action:
