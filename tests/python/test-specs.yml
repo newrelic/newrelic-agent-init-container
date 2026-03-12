@@ -15,7 +15,7 @@ scenarios:
       - kubectl get pods --output yaml | yq '.items[].spec.initContainers[].name' | grep -q "nri-python--test-app-python" || { echo -e "===== Operator failed to attach initcontainer. =====" >&2; exit 1; }
       # Send traffic to test app to generate transactions
       - sleep 10
-      - curl --fail-with-body --max-time 30 $(minikube service test-app-python-service --url -n default)
+      - curl --fail-with-body --max-time 30 --retry 3 $(minikube service test-app-python-service --url -n default)
     tests:
       nrqls:
         - query: SELECT latest(duration) AS duration FROM Transaction WHERE appName = 'k8s-e2e-test-app-python'
