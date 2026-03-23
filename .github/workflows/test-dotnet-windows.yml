@@ -44,6 +44,11 @@ jobs:
           $agentVersion = $refName -replace '^v', '' -replace '_[a-zA-Z]*', '' -replace '\.[0-9]*$', ''
           "AGENT_VERSION=$agentVersion" | Out-File -FilePath $env:GITHUB_ENV -Append
 
+      - name: Verify Docker is available
+        run: |
+          docker version
+          docker info
+
       - name: Build and init container image
         run: |
           cd src/dotnet-windows
