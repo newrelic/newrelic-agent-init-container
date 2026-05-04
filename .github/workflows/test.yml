@@ -45,7 +45,7 @@ jobs:
 
       # Gives higher rate limits for image pulls
       - name: Login to Docker Hub Container Registry (Read Only)
-        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # 4.0.0
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # 4.1.0
         # skip login for workflows triggered by Dependabot 
         if: github.actor != 'dependabot[bot]' 
         with:
@@ -101,7 +101,7 @@ jobs:
             ${BUILD_ARGS}
 
       - name: Run e2e-test
-        uses: newrelic/newrelic-integration-e2e-action@c548a33a0c2941a4db4899ded766923eb3178e0e  # 1.12.0
+        uses: newrelic/newrelic-integration-e2e-action@d0c7c2b8f9af227365d71c6b7fddbc024c9e331a  # 1.12.1
         # Skip e2e tests for dependabot PRs since dependabot can't access secrets
         if: github.actor != 'dependabot[bot]'
         with:
