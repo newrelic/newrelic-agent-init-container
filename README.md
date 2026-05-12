@@ -28,9 +28,9 @@ Each Node.js container is only compatible with a single major version of Node.js
 | Image Tag        | Node.js Major Version  |
 |------------------|------------------------|
 | latest           | Latest Supported  (24) |
-| 13.0.0           | Latest Supported  (24) |
-| 13.0.0-nodejs24x | 24                     |
-| 13.0.0-nodejs22x | 22                     |
+| 14.0.0           | Latest Supported  (24) |
+| 14.0.0-nodejs24x | 24                     |
+| 14.0.0-nodejs22x | 22                     |
 
 ## Local Testing
 
@@ -134,7 +134,7 @@ crane copy $IMAGE_NAME:8.11.0.0 $IMAGE_NAME:8
 crane copy $IMAGE_NAME:8.10.1.0 $IMAGE_NAME:8.10
 ```
 
-For agents with suffixes like `-nodejs20x`, significantly more tags will need to be overwritten (see [image tagging conventions](#image-tagging-conventions)).
+For agents with suffixes like `-nodejs22x`, significantly more tags will need to be overwritten (see [image tagging conventions](#image-tagging-conventions)).
 
 ## Support
 
