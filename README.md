@@ -31,7 +31,6 @@ Each Node.js container is only compatible with a single major version of Node.js
 | 13.0.0           | Latest Supported  (24) |
 | 13.0.0-nodejs24x | 24                     |
 | 13.0.0-nodejs22x | 22                     |
-| 13.0.0-nodejs20x | 20                     |
 
 ## Local Testing
 
