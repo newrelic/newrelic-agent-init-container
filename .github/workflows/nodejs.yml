@@ -49,7 +49,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [20, 22, 24]
+        node-version: [22, 24]
         architecture: ["linux/amd64", "linux/arm64", "linux/arm"]
         exclude:
           - node-version: 24
@@ -69,8 +69,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - node-version: 20
-            architecture: "linux/amd64,linux/arm64,linux/arm"
           - node-version: 22
             architecture: "linux/amd64,linux/arm64,linux/arm"
           - node-version: 24
