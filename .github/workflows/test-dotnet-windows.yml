@@ -44,10 +44,8 @@ jobs:
           $agentVersion = $refName -replace '^v', '' -replace '_[a-zA-Z]*', '' -replace '\.[0-9]*$', ''
           "AGENT_VERSION=$agentVersion" | Out-File -FilePath $env:GITHUB_ENV -Append
 
-      - name: Verify Docker is available
-        run: |
-          docker version
-          docker info
+      - name: Wait for Docker to be available
+        uses: ./.github/actions/wait_for_docker
 
       - name: Build and init container image
         run: |
@@ -56,8 +54,18 @@ jobs:
           # Build container
           $env:IMAGE_NAME="local/${{ format('newrelic-{0}{1}-init', 'dotnet-windows', inputs.TARGETARCH) }}:latest"
 
-          Write-Host "docker build --build-arg TARGETARCH=${{ inputs.TARGETARCH }} --build-arg AGENT_VERSION=${{ env.AGENT_VERSION }} -t $env:IMAGE_NAME ."
-          docker build --build-arg TARGETARCH=${{ inputs.TARGETARCH }} --build-arg AGENT_VERSION=${{ env.AGENT_VERSION }} -t $env:IMAGE_NAME .
+          # Retry the build to absorb transient base-image pull throttling (e.g.
+          # MCR "request is blocked") and Docker daemon hiccups on hosted runners.
+          $maxAttempts = 3
+          for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
+            Write-Host "docker build attempt $attempt of $maxAttempts"
+            Write-Host "docker build --build-arg TARGETARCH=${{ inputs.TARGETARCH }} --build-arg AGENT_VERSION=${{ env.AGENT_VERSION }} -t $env:IMAGE_NAME ."
+            docker build --build-arg TARGETARCH=${{ inputs.TARGETARCH }} --build-arg AGENT_VERSION=${{ env.AGENT_VERSION }} -t $env:IMAGE_NAME .
+            if ($LASTEXITCODE -eq 0) { break }
+            if ($attempt -eq $maxAttempts) { throw "docker build failed after $maxAttempts attempts." }
+            Write-Host "Build failed (exit $LASTEXITCODE); retrying in 15 seconds..."
+            Start-Sleep -Seconds 15
+          }
 
       # Not meant to be exhaustive, just a basic check that the image was built correctly
       - name: Run basic tests
