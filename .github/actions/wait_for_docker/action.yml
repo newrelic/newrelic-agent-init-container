@@ -1,0 +1,40 @@
+# Copyright New Relic, Inc.
+# SPDX-License-Identifier: Apache-2.0
+---
+name: 'Wait for Docker'
+description: 'Polls the Docker daemon until it is responsive, to absorb cold-start races on Windows runners.'
+
+inputs:
+  attempts:
+    description: "Maximum number of readiness probes before failing."
+    required: false
+    default: "30"
+  delay_seconds:
+    description: "Seconds to wait between probes."
+    required: false
+    default: "5"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Wait for Docker daemon
+      shell: pwsh
+      run: |
+        $attempts = [int]"${{ inputs.attempts }}"
+        $delay = [int]"${{ inputs.delay_seconds }}"
+
+        for ($i = 1; $i -le $attempts; $i++) {
+          # 'docker info' returns non-zero until the daemon is reachable. Native
+          # command failures don't throw, so we branch on $LASTEXITCODE.
+          docker info *> $null
+          if ($LASTEXITCODE -eq 0) {
+            Write-Host "Docker daemon is ready (attempt $i of $attempts)."
+            docker version
+            exit 0
+          }
+          Write-Host "Docker daemon not ready (attempt $i of $attempts); waiting $delay seconds..."
+          Start-Sleep -Seconds $delay
+        }
+
+        Write-Error "Docker daemon did not become ready after $attempts attempts."
+        exit 1

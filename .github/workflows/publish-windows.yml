@@ -45,7 +45,10 @@
   
         - name: Checkout code
           uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # 6.0.3
-  
+
+        - name: Wait for Docker to be available
+          uses: ./.github/actions/wait_for_docker
+
         - name: Extract Agent Version Tags
           id: version
           uses: ./.github/actions/extract_agent_version_tags
@@ -92,9 +95,19 @@
             # Build container
             $env:IMAGE_NAME="local/${{ format('newrelic-{0}{1}-init', inputs.INITCONTAINER_LANGUAGE, inputs.TARGETARCH) }}:latest"
             
-            Write-Host "docker build ${{ steps.prep_labels.outputs.labels }} --build-arg TARGETARCH=${{ inputs.TARGETARCH }} --build-arg AGENT_VERSION=${{ steps.version.outputs.agent_version }} -t $env:IMAGE_NAME ."
-            docker build ${{ steps.prep_labels.outputs.labels }} --build-arg TARGETARCH=${{ inputs.TARGETARCH }} --build-arg AGENT_VERSION=${{ steps.version.outputs.agent_version }} -t $env:IMAGE_NAME .
-  
+            # Retry the build to absorb transient base-image pull throttling (e.g.
+            # MCR "request is blocked") and Docker daemon hiccups on hosted runners.
+            $maxAttempts = 3
+            for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
+              Write-Host "docker build attempt $attempt of $maxAttempts"
+              Write-Host "docker build ${{ steps.prep_labels.outputs.labels }} --build-arg TARGETARCH=${{ inputs.TARGETARCH }} --build-arg AGENT_VERSION=${{ steps.version.outputs.agent_version }} -t $env:IMAGE_NAME ."
+              docker build ${{ steps.prep_labels.outputs.labels }} --build-arg TARGETARCH=${{ inputs.TARGETARCH }} --build-arg AGENT_VERSION=${{ steps.version.outputs.agent_version }} -t $env:IMAGE_NAME .
+              if ($LASTEXITCODE -eq 0) { break }
+              if ($attempt -eq $maxAttempts) { throw "docker build failed after $maxAttempts attempts." }
+              Write-Host "Build failed (exit $LASTEXITCODE); retrying in 15 seconds..."
+              Start-Sleep -Seconds 15
+            }
+
             # tag container
             Write-Host "Starting tagging process for $env:IMAGE_NAME"
             foreach ($tag in ($env:DOCKER_METADATA_OUTPUT_TAGS -split "`n")) {
