@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 ---
 name: 'Wait for Docker'
-description: 'Polls the Docker daemon until it is responsive, to absorb cold-start races on Windows runners.'
+description: 'Ensures the Docker daemon is running on Windows runners, restarting the service if a runner boot left it stopped, and waiting until it is responsive.'
 
 inputs:
   attempts:
@@ -32,9 +32,33 @@ runs:
             docker version
             exit 0
           }
+
+          # Known GitHub-hosted Windows runner regression: on runner boot the
+          # Docker service sometimes fails to create its Hyper-V virtual switch
+          # ("hnsCall failed in Win32: The system cannot find the file
+          # specified") and is left Stopped, so the docker_engine named pipe
+          # never appears. Restarting the service fixes it ~100% of the time.
+          # Workaround per actions/runner-images#13729; remove once fixed
+          # upstream. Affects Docker Engine v29+.
+          $svc = Get-Service -Name 'docker' -ErrorAction SilentlyContinue
+          if ($svc -and $svc.Status -ne 'Running') {
+            Write-Host "Docker service is '$($svc.Status)'; attempting Start-Service..."
+            Start-Service -Name 'docker' -ErrorAction SilentlyContinue
+          }
+
           Write-Host "Docker daemon not ready (attempt $i of $attempts); waiting $delay seconds..."
           Start-Sleep -Seconds $delay
         }
+
+        # Surface why the daemon never came up so the failure is diagnosable
+        # instead of just timing out silently.
+        Write-Host "::group::Docker diagnostics"
+        Get-Service -Name 'docker' -ErrorAction SilentlyContinue |
+          Format-Table -AutoSize | Out-String | Write-Host
+        Get-WinEvent -ProviderName 'docker' -MaxEvents 40 -ErrorAction SilentlyContinue |
+          Select-Object TimeCreated, LevelDisplayName, Message |
+          Format-List | Out-String | Write-Host
+        Write-Host "::endgroup::"
 
         Write-Error "Docker daemon did not become ready after $attempts attempts."
         exit 1
