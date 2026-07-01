@@ -29,7 +29,7 @@ RUN cp ./workspace/newrelic/newrelic/bootstrap/sitecustomize.py ./workspace/site
 COPY newrelic_k8s_operator.py ./workspace/
 
 # Package Init Container
-FROM busybox:latest@sha256:c230832bd3b0be59a6c47ed64294f9ce71e91b327957920b6929a0caa8353140
+FROM busybox:stable@sha256:73aaf090f3d85aa34ee199857f03fa3a95c8ede2ffd4cc2cdb5b94e566b11662
 
 COPY --from=build /operator-build/workspace /instrumentation
 RUN chmod -R go+r /instrumentation

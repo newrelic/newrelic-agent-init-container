@@ -33,31 +33,24 @@ permissions: read-all
 jobs:
   test:
     name: Run E2E tests for ${{ inputs.INITCONTAINER_LANGUAGE }}
-    runs-on: ubuntu-latest
+    runs-on: ${{ startsWith(inputs.ARCHITECTURE, 'linux/arm') && 'ubuntu-24.04-arm' || 'ubuntu-24.04'}}
     env:
       TEST_APP_HELM_CHART_ARGS: ${{ inputs.TEST_APP_HELM_CHART_ARGS }}
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # 4.2.2
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # 7.0.0
         with:
           persist-credentials: false
 
       # Gives higher rate limits for image pulls
       - name: Login to Docker Hub Container Registry (Read Only)
-        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # 3.3.0
+        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # 4.2.0
         # skip login for workflows triggered by Dependabot 
         if: github.actor != 'dependabot[bot]' 
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN_READ_ONLY }}
-
-      - name: Enable arm64 emulation
-        if: inputs.ARCHITECTURE != 'linux/amd64'
-        uses: docker/setup-qemu-action@49b3bc8e6bdd4a60e6116a5414239cba5943d3cf # 3.2.0
-        with:
-          image: tonistiigi/binfmt:qemu-v6.2.0
-          platforms: ${{ inputs.ARCHITECTURE }}
 
       - name: Extract Agent Version from Release Tag
         id: version
@@ -67,10 +60,10 @@ jobs:
 
       - name: Set up Docker Buildx
         id: buildx
-        uses: docker/setup-buildx-action@c47758b77c9736f4b2ef4073d4d51994fabfe349 # 3.7.1
+        uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # 4.1.0
 
       - name: Start minikube
-        uses: medyagh/setup-minikube@d8c0eb871f6f455542491d86a574477bd3894533 # 0.0.18
+        uses: medyagh/setup-minikube@e9e035a86bbc3caea26a450bd4dbf9d0c453682e # 0.0.21
 
       - name: Deploy New Relic k8s-agents-operator to minikube
         run: |
@@ -79,9 +72,10 @@ jobs:
           helm upgrade --install k8s-agents-operator k8s-agents-operator/k8s-agents-operator \
             --namespace=default \
             --set=licenseKey=${{ secrets.NEW_RELIC_LICENSE_KEY }} \
-            --set=controllerManager.manager.image.tag=${{ inputs.K8S_OPERATOR_IMAGE_TAG }}
+            --set=controllerManager.manager.image.version=${{ inputs.K8S_OPERATOR_IMAGE_TAG }}
           sleep 5
           kubectl wait --for=condition=Ready -n default --all pods
+          sleep 30
 
       - name: Build init container
         run: |
@@ -107,7 +101,7 @@ jobs:
             ${BUILD_ARGS}
 
       - name: Run e2e-test
-        uses: newrelic/newrelic-integration-e2e-action@fd53fc95e287dcd7b5bd86a4a25d653aadf407d0  # 1.11.1
+        uses: newrelic/newrelic-integration-e2e-action@d0c7c2b8f9af227365d71c6b7fddbc024c9e331a  # 1.12.1
         # Skip e2e tests for dependabot PRs since dependabot can't access secrets
         if: github.actor != 'dependabot[bot]'
         with:

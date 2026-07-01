@@ -8,7 +8,7 @@
 #    CORECLR_PROFILER_PATH=%InstallationLocation%/libNewRelicProfiler.so
 #    CORECLR_NEWRELIC_HOME=%InstallationLocation% 
 
-FROM alpine:latest@sha256:1e42bbe2508154c9126d48c2b8a75420c3544343bf86fd041fb7527e017a4b4a as build
+FROM alpine:latest@sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434943f8b as build
 RUN apk update && apk add ca-certificates
 WORKDIR /instrumentation
 
@@ -24,6 +24,6 @@ RUN /dotnet-agent-download.sh $TARGETARCH $AGENT_VERSION
 # replace agentinfo.json from the tarball with one that identifies this as a k8s-operator install type
 COPY agentinfo.json .
 
-FROM busybox:latest@sha256:db142d433cdde11f10ae479dbf92f3b13d693fd1c91053da9979728cceb1dc68 
+FROM busybox:stable@sha256:73aaf090f3d85aa34ee199857f03fa3a95c8ede2ffd4cc2cdb5b94e566b11662
 COPY --from=build /instrumentation /instrumentation
 RUN chmod -R go+r /instrumentation
