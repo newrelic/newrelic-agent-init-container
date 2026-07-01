@@ -1,7 +1,7 @@
 # Copyright New Relic, Inc.
 # SPDX-License-Identifier: Apache-2.0
 ---
-name: Init Container Publish
+name: Linux Init Container Publish
 
 on:
   workflow_call:
@@ -42,17 +42,17 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f # v2.10.2
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
         with:
           disable-sudo: true
           egress-policy: audit
 
       - name: Checkout code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # 4.2.2
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # 7.0.0
 
       - name: Set up Docker Buildx
         id: buildx
-        uses: docker/setup-buildx-action@6524bf65af31da8d45b59e8c27de4bd072b392f5 # 3.8.0
+        uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # 4.1.0
 
       - name: Extract Agent Version Tags
         id: version
@@ -63,7 +63,7 @@ jobs:
 
       - name: Generate Docker metadata (tags and labels)
         id: meta
-        uses: docker/metadata-action@369eb591f429131d6889c46b94e711f089e6ca96 # 5.6.1
+        uses: docker/metadata-action@80c7e94dd9b9319bd5eb7a0e0fe9291e23a2a2e9 # 6.1.0
         with:
           images: ${{ inputs.DOCKER_IMAGE_NAME || format('newrelic/newrelic-{0}-init', inputs.INITCONTAINER_LANGUAGE) }}
           flavor: |
@@ -71,13 +71,13 @@ jobs:
           tags: ${{ steps.version.outputs.tags }}
 
       - name: Login to Docker Hub Container Registry
-        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # 3.3.0
+        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # 4.2.0
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
 
       - name: Build and publish init container image
-        uses: docker/build-push-action@48aba3b46d1b1fec4febb7c5d0c644b249a11355 # 6.10.0
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # 7.3.0
         with:
           push: true
           context: src/${{ inputs.INITCONTAINER_LANGUAGE }}/

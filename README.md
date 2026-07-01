@@ -25,13 +25,12 @@ In this example, once the tag `9.10.0.0` is published it will never be replaced.
 
 Each Node.js container is only compatible with a single major version of Node.js. As a result, all Node.js agent versions are published as separate images with a Node.js version suffix. The `latest` tag and any tags without this suffix point to the latest supported major version of Node.js. For example:
 
-| Image Tag         | Node.js Major Version   |
-|-------------------|------------------------|
-| latest            | Latest Supported  (20) |
-| 11.19.0           | Latest Supported  (20) |
-| 11.19.0-nodejs20x | 20                     |
-| 11.19.0-nodejs18x | 18                     |
-| 11.19.0-nodejs16x | 16                     |
+| Image Tag        | Node.js Major Version  |
+|------------------|------------------------|
+| latest           | Latest Supported  (24) |
+| 14.0.0           | Latest Supported  (24) |
+| 14.0.0-nodejs24x | 24                     |
+| 14.0.0-nodejs22x | 22                     |
 
 ## Local Testing
 
@@ -135,7 +134,7 @@ crane copy $IMAGE_NAME:8.11.0.0 $IMAGE_NAME:8
 crane copy $IMAGE_NAME:8.10.1.0 $IMAGE_NAME:8.10
 ```
 
-For agents with suffixes like `-nodejs20x`, significantly more tags will need to be overwritten (see [image tagging conventions](#image-tagging-conventions)).
+For agents with suffixes like `-nodejs22x`, significantly more tags will need to be overwritten (see [image tagging conventions](#image-tagging-conventions)).
 
 ## Support
 
