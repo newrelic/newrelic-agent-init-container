@@ -14,6 +14,6 @@ RUN rm php-agent-download.sh
 RUN mkdir php-agent php-agent/bin php-agent/ext php-agent/ini php-agent/logs
 COPY newrelic.ini ./php-agent/ini/
 
-FROM busybox:stable@sha256:7c3c3cea5d4d6133d6a694d23382f6a7b32652f23855abdba3eb039ca5995447
+FROM busybox:stable@sha256:73aaf090f3d85aa34ee199857f03fa3a95c8ede2ffd4cc2cdb5b94e566b11662
 COPY --from=build /instrumentation /instrumentation
 RUN chmod -R go+r /instrumentation
