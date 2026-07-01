@@ -1,0 +1,19 @@
+[[IgnoredVulns]]
+id = "GHSA-gc5v-m9x4-r6x2"
+ignoreUntil = 2027-07-01
+reason = "requests 2.33.0 requires Python >=3.10; init container supports Python 3.9. Advisory only affects direct callers of extract_zipped_paths(); this repo does not use that function."
+
+[[IgnoredVulns]]
+id = "GHSA-58qw-9mgm-455v"
+ignoreUntil = 2027-07-01
+reason = "pip 26.1 requires Python >=3.10; init container supports Python 3.9."
+
+[[IgnoredVulns]]
+id = "GHSA-jp4c-xjxw-mgf9"
+ignoreUntil = 2027-07-01
+reason = "pip 26.1 requires Python >=3.10; init container supports Python 3.9."
+
+[[IgnoredVulns]]
+id = "PYSEC-2026-196"
+ignoreUntil = 2027-07-01
+reason = "pip 26.1.2 requires Python >=3.10; init container supports Python 3.9."
