@@ -6,11 +6,15 @@
 #    https://docs.newrelic.com/docs/apm/agents/net-agent/configuration/net-agent-configuration/#net-core-env-variables
 
 # This container needs to match the target architecture.
-# Valid TARGETARCH: ltsc2022, ltsc2025
-ARG TARGETARCH
+# Valid TARGETARCH: 2022, 2025
+ARG TARGETARCH=2025
+
+# Pin both possible base images by hash; the final FROM selects between them at build time.
+FROM mcr.microsoft.com/windows/nanoserver:ltsc2022@sha256:7644d94e806b07c22d7e276a8cdbcbffac1d02bf3d5170884302d0e9b0a519e9 AS base-2022
+FROM mcr.microsoft.com/windows/nanoserver:ltsc2025@sha256:c71ca7f010608e202e62df477ca19542dd9c44e2a20508af8f92ff63859b0540 AS base-2025
 
 # This container can be pinned to latest OS since all it does is get the data which is OS agnostic.
-FROM mcr.microsoft.com/windows/nanoserver:ltsc2025@sha256:5e9a1be8f0685f35156a524fb8a88b9d36085db12def20eb52e11b0bb1f79a10 as build
+FROM mcr.microsoft.com/windows/nanoserver:ltsc2025@sha256:c71ca7f010608e202e62df477ca19542dd9c44e2a20508af8f92ff63859b0540 AS build
 
 # Set the working directory
 WORKDIR C:\\instrumentation
@@ -28,7 +32,7 @@ COPY agentinfo.json .
 COPY agentinfo.json .\\netcore\\agentinfo.json
 COPY agentinfo.json .\\netframework\\agentinfo.json
 
-# This container needs to match the target architecture.
-FROM mcr.microsoft.com/windows/nanoserver:ltsc${TARGETARCH}
+# Select the pre-pinned base image for the target architecture.
+FROM base-${TARGETARCH}
 
 COPY --from=build /instrumentation /instrumentation
