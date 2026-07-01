@@ -23,13 +23,13 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # 5.0.0
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # 7.0.0
         with:
           persist-credentials: false
 
       # Gives higher rate limits for image pulls
       - name: Login to Docker Hub Container Registry (Read Only)
-        uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # 3.5.0
+        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # 4.2.0
         # skip login for workflows triggered by Dependabot 
         if: github.actor != 'dependabot[bot]' 
         with:
@@ -44,6 +44,9 @@ jobs:
           $agentVersion = $refName -replace '^v', '' -replace '_[a-zA-Z]*', '' -replace '\.[0-9]*$', ''
           "AGENT_VERSION=$agentVersion" | Out-File -FilePath $env:GITHUB_ENV -Append
 
+      - name: Wait for Docker to be available
+        uses: ./.github/actions/wait_for_docker
+
       - name: Build and init container image
         run: |
           cd src/dotnet-windows
@@ -51,8 +54,18 @@ jobs:
           # Build container
           $env:IMAGE_NAME="local/${{ format('newrelic-{0}{1}-init', 'dotnet-windows', inputs.TARGETARCH) }}:latest"
 
-          Write-Host "docker build --build-arg TARGETARCH=${{ inputs.TARGETARCH }} --build-arg AGENT_VERSION=${{ env.AGENT_VERSION }} -t $env:IMAGE_NAME ."
-          docker build --build-arg TARGETARCH=${{ inputs.TARGETARCH }} --build-arg AGENT_VERSION=${{ env.AGENT_VERSION }} -t $env:IMAGE_NAME .
+          # Retry the build to absorb transient base-image pull throttling (e.g.
+          # MCR "request is blocked") and Docker daemon hiccups on hosted runners.
+          $maxAttempts = 3
+          for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
+            Write-Host "docker build attempt $attempt of $maxAttempts"
+            Write-Host "docker build --build-arg TARGETARCH=${{ inputs.TARGETARCH }} --build-arg AGENT_VERSION=${{ env.AGENT_VERSION }} -t $env:IMAGE_NAME ."
+            docker build --build-arg TARGETARCH=${{ inputs.TARGETARCH }} --build-arg AGENT_VERSION=${{ env.AGENT_VERSION }} -t $env:IMAGE_NAME .
+            if ($LASTEXITCODE -eq 0) { break }
+            if ($attempt -eq $maxAttempts) { throw "docker build failed after $maxAttempts attempts." }
+            Write-Host "Build failed (exit $LASTEXITCODE); retrying in 15 seconds..."
+            Start-Sleep -Seconds 15
+          }
 
       # Not meant to be exhaustive, just a basic check that the image was built correctly
       - name: Run basic tests
