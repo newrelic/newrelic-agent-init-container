@@ -6,7 +6,7 @@
 #   Then in the second stage, copy the directory to `/instrumentation`.
 # - Ensure you have `newrelic`, and`@newrelic/native-metrics`.
 # - Grant the necessary access to `/instrumentation` directory. `chmod -R go+r /instrumentation`
-ARG RUNTIME_VERSION=20
+ARG RUNTIME_VERSION=22
 
 FROM node:${RUNTIME_VERSION} AS build
 
