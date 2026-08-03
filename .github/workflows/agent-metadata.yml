@@ -54,12 +54,12 @@ jobs:
     continue-on-error: true
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
         with:
           disable-sudo: true
           egress-policy: audit
       - name: Run action
-        uses: newrelic/agent-metadata-action@8d9478273aa88567a2922bc7a562dd5510d4f69c #v1.2.0
+        uses: newrelic/agent-metadata-action@5a6654e0866cfbad9ce1de68a5e016f888771548 #v1.3.0
         with:
           newrelic-client-id: ${{ secrets.FC_SYS_ID_CLIENT_ID }}
           newrelic-private-key: ${{ secrets.FC_SYS_ID_PR_KEY }}
