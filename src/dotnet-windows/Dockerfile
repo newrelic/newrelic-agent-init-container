@@ -10,11 +10,11 @@
 ARG TARGETARCH=2025
 
 # Pin both possible base images by hash; the final FROM selects between them at build time.
-FROM mcr.microsoft.com/windows/nanoserver:ltsc2022@sha256:93efcae2cbb2f9f0d26481035ad00c807f877c7a4d3aa59c9b26342d30d60592 AS base-2022
-FROM mcr.microsoft.com/windows/nanoserver:ltsc2025@sha256:fda578d34f56de2f60d91a178fd954fdc95596ebb67b3bc363deb708ef1fd94c AS base-2025
+FROM mcr.microsoft.com/windows/nanoserver:ltsc2022@sha256:e4ce8c20390c3785c3cbeef15c579d186b3599d37525c596590cf4508e38d3ff AS base-2022
+FROM mcr.microsoft.com/windows/nanoserver:ltsc2025@sha256:6f8cc852e1dc02279f57adfc063b9640dc4e51f5758410e98b116bd919f849bc AS base-2025
 
 # This container can be pinned to latest OS since all it does is get the data which is OS agnostic.
-FROM mcr.microsoft.com/windows/nanoserver:ltsc2025@sha256:fda578d34f56de2f60d91a178fd954fdc95596ebb67b3bc363deb708ef1fd94c AS build
+FROM mcr.microsoft.com/windows/nanoserver:ltsc2025@sha256:6f8cc852e1dc02279f57adfc063b9640dc4e51f5758410e98b116bd919f849bc AS build
 
 # Set the working directory
 WORKDIR C:\\instrumentation
