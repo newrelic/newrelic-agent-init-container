@@ -64,6 +64,9 @@ jobs:
 
       - name: Start minikube
         uses: medyagh/setup-minikube@e9e035a86bbc3caea26a450bd4dbf9d0c453682e # 0.0.21
+        with:
+          # minikube 1.39.0 defaults to containerd, whose docker-env shim breaks buildx
+          container-runtime: docker
 
       - name: Deploy New Relic k8s-agents-operator to minikube
         run: |
