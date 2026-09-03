@@ -64,6 +64,9 @@ jobs:
 
       - name: Start minikube
         uses: medyagh/setup-minikube@e9e035a86bbc3caea26a450bd4dbf9d0c453682e # 0.0.21
+        with:
+          # minikube 1.39.0 defaults to containerd, whose docker-env shim breaks buildx
+          container-runtime: docker
 
       - name: Deploy New Relic k8s-agents-operator to minikube
         run: |
@@ -73,9 +76,26 @@ jobs:
             --namespace=default \
             --set=licenseKey=${{ secrets.NEW_RELIC_LICENSE_KEY }} \
             --set=controllerManager.manager.image.version=${{ inputs.K8S_OPERATOR_IMAGE_TAG }}
-          sleep 5
-          kubectl wait --for=condition=Ready -n default --all pods
-          sleep 30
+          kubectl rollout status deployment/k8s-agents-operator -n default --timeout=180s
+          kubectl wait --for=condition=Ready -n default --all pods --timeout=180s
+          # pod readiness only covers /readyz on 8081; helm needs the webhook TLS port
+          for i in $(seq 1 30); do
+            kubectl port-forward -n default service/k8s-agents-operator-webhook-service 8443:443 >/dev/null 2>&1 &
+            pf=$!
+            sleep 2
+            if curl -sk -o /dev/null -m 3 https://127.0.0.1:8443/convert; then
+              kill "${pf}" 2>/dev/null || true
+              echo "conversion webhook is serving"
+              webhook_ready=1
+              break
+            fi
+            kill "${pf}" 2>/dev/null || true
+            sleep 2
+          done
+          if [[ "${webhook_ready:-0}" != "1" ]]; then
+            echo "conversion webhook did not start serving" >&2
+            exit 1
+          fi
 
       - name: Build init container
         run: |
