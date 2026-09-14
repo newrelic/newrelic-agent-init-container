@@ -45,7 +45,10 @@ on:
         required: true
       FC_SYS_ID_PR_KEY:
         required: true
+      AGENT_METADATA_ACTION_LICENSE_KEY:
+        required: false
       APM_CONTROL_NR_LICENSE_KEY_STAGING:
+        description: 'Deprecated: use AGENT_METADATA_ACTION_LICENSE_KEY instead.'
         required: false
 
 jobs:
@@ -59,11 +62,11 @@ jobs:
           disable-sudo: true
           egress-policy: audit
       - name: Run action
-        uses: newrelic/agent-metadata-action@f54db63d39530eded4ec65d278a590cf0a6f7d47 #v1.5.1
+        uses: newrelic/agent-metadata-action@b442f1dd91620fc549d558114e6ff6298bbc22ef #v1.6.0
         with:
           newrelic-client-id: ${{ secrets.FC_SYS_ID_CLIENT_ID }}
           newrelic-private-key: ${{ secrets.FC_SYS_ID_PR_KEY }}
-          apm-control-nr-license-key: ${{ secrets.APM_CONTROL_NR_LICENSE_KEY_STAGING }} # action app is instrumented and supported by APM Control team
+          newrelic-license-key: ${{ secrets.AGENT_METADATA_ACTION_LICENSE_KEY || secrets.APM_CONTROL_NR_LICENSE_KEY_STAGING }} # license key for the team that own's the action
           agent-type: ${{ inputs.agent-type }}
           version: ${{ inputs.version }}
           cache: ${{ inputs.use-cache }}
