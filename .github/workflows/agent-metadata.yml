@@ -62,7 +62,7 @@ jobs:
           disable-sudo: true
           egress-policy: audit
       - name: Run action
-        uses: newrelic/agent-metadata-action@b442f1dd91620fc549d558114e6ff6298bbc22ef #v1.6.0
+        uses: newrelic/agent-metadata-action/send-metadata@399d5ba876e7d03bf6215f8283d72ffb8dc8240b # v1.7.0
         with:
           newrelic-client-id: ${{ secrets.FC_SYS_ID_CLIENT_ID }}
           newrelic-private-key: ${{ secrets.FC_SYS_ID_PR_KEY }}
