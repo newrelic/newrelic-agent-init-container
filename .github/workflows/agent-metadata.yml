@@ -47,9 +47,6 @@ on:
         required: true
       AGENT_METADATA_ACTION_LICENSE_KEY:
         required: false
-      APM_CONTROL_NR_LICENSE_KEY_STAGING:
-        description: 'Deprecated: use AGENT_METADATA_ACTION_LICENSE_KEY instead.'
-        required: false
 
 jobs:
   test-agent-metadata-action:
@@ -66,7 +63,7 @@ jobs:
         with:
           newrelic-client-id: ${{ secrets.FC_SYS_ID_CLIENT_ID }}
           newrelic-private-key: ${{ secrets.FC_SYS_ID_PR_KEY }}
-          newrelic-license-key: ${{ secrets.AGENT_METADATA_ACTION_LICENSE_KEY || secrets.APM_CONTROL_NR_LICENSE_KEY_STAGING }} # license key for the team that own's the action
+          newrelic-license-key: ${{ secrets.AGENT_METADATA_ACTION_LICENSE_KEY }} # license key for the team that owns the action
           agent-type: ${{ inputs.agent-type }}
           version: ${{ inputs.version }}
           cache: ${{ inputs.use-cache }}
