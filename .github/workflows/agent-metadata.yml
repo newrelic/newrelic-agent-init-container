@@ -19,6 +19,11 @@ on:
         required: false
         default: true
         type: boolean
+      environment-name:
+        description: 'GitHub environment whose secrets and protection rules the job should use. Leave empty for none.'
+        required: false
+        default: ''
+        type: string
 # commented items below pertain to future work
 #      oci-registry:
 #        description: 'OCI registry URL for binary uploads (e.g., ghcr.io/newrelic/agents). Leave empty to skip binary upload.'
@@ -42,15 +47,16 @@ on:
 #        type: string
     secrets:
       FC_SYS_ID_CLIENT_ID:
-        required: true
+        required: false
       FC_SYS_ID_PR_KEY:
-        required: true
+        required: false
       AGENT_METADATA_ACTION_LICENSE_KEY:
         required: false
 
 jobs:
   test-agent-metadata-action:
     runs-on: ubuntu-latest
+    environment: ${{ inputs.environment-name }}
     continue-on-error: true
     steps:
       - name: Harden Runner
