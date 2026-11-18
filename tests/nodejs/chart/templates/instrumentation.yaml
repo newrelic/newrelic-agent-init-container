@@ -18,3 +18,5 @@ spec:
         value: "true"
       - name: NEW_RELIC_LOG_LEVEL
         value: "debug"
+      - name: NEW_RELIC_HOST
+        value: "collector.newrelic.com"
