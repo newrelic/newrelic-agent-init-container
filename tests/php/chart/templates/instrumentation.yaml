@@ -12,3 +12,6 @@ spec:
   agent:
     language: "php-{{ .Values.phpVersion }}"
     image: e2e/newrelic-php-init:e2e
+    env:
+      - name: NEW_RELIC_DAEMON_COLLECTOR_HOST
+        value: "collector.newrelic.com"
