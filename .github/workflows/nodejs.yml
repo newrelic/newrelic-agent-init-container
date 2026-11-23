@@ -49,10 +49,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [22, 24]
+        node-version: [22, 24, 26]
         architecture: ["linux/amd64", "linux/arm64", "linux/arm"]
         exclude:
           - node-version: 24
+            architecture: linux/arm
+          - node-version: 26
             architecture: linux/arm
     with:
       INITCONTAINER_LANGUAGE: nodejs
@@ -72,6 +74,8 @@ jobs:
           - node-version: 22
             architecture: "linux/amd64,linux/arm64,linux/arm"
           - node-version: 24
+            architecture: "linux/amd64,linux/arm64"
+          - node-version: 26
             architecture: "linux/amd64,linux/arm64"
     with:
       INITCONTAINER_LANGUAGE: nodejs

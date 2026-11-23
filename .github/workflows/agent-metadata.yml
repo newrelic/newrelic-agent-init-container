@@ -19,6 +19,11 @@ on:
         required: false
         default: true
         type: boolean
+      environment-name:
+        description: 'GitHub environment whose secrets and protection rules the job should use. Leave empty for none.'
+        required: false
+        default: ''
+        type: string
 # commented items below pertain to future work
 #      oci-registry:
 #        description: 'OCI registry URL for binary uploads (e.g., ghcr.io/newrelic/agents). Leave empty to skip binary upload.'
@@ -42,28 +47,29 @@ on:
 #        type: string
     secrets:
       FC_SYS_ID_CLIENT_ID:
-        required: true
+        required: false
       FC_SYS_ID_PR_KEY:
-        required: true
-      APM_CONTROL_NR_LICENSE_KEY_STAGING:
+        required: false
+      AGENT_METADATA_ACTION_LICENSE_KEY:
         required: false
 
 jobs:
   test-agent-metadata-action:
     runs-on: ubuntu-latest
+    environment: ${{ inputs.environment-name }}
     continue-on-error: true
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
         with:
           disable-sudo: true
           egress-policy: audit
       - name: Run action
-        uses: newrelic/agent-metadata-action@8d9478273aa88567a2922bc7a562dd5510d4f69c #v1.2.0
+        uses: newrelic/agent-metadata-action/send-metadata@39a73d441e2787d13d4de26b1f437025cc34dcc7 # v1.7.1
         with:
           newrelic-client-id: ${{ secrets.FC_SYS_ID_CLIENT_ID }}
           newrelic-private-key: ${{ secrets.FC_SYS_ID_PR_KEY }}
-          apm-control-nr-license-key: ${{ secrets.APM_CONTROL_NR_LICENSE_KEY_STAGING }} # action app is instrumented and supported by APM Control team
+          newrelic-license-key: ${{ secrets.AGENT_METADATA_ACTION_LICENSE_KEY }} # license key for the team that owns the action
           agent-type: ${{ inputs.agent-type }}
           version: ${{ inputs.version }}
           cache: ${{ inputs.use-cache }}
